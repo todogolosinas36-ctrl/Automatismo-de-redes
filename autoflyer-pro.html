@@ -1,0 +1,1192 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoFlyer Pro — Generador de Flyers Promocionales</title>
+  <meta name="description" content="Genera flyers promocionales profesionales al instante. Sube una foto de producto, define precio y estilo, y descarga tu flyer listo para redes sociales." />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Bebas+Neue&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            inter: ['Inter', 'sans-serif'],
+            bebas: ['Bebas Neue', 'cursive'],
+            outfit: ['Outfit', 'sans-serif'],
+          },
+          colors: {
+            brand: { 50: '#eef5ff', 100: '#d9e8ff', 200: '#bbd8ff', 300: '#8cc0ff', 400: '#569dff', 500: '#2f79fc', 600: '#1958f1', 700: '#1544de', 800: '#1738b4', 900: '#19338d' },
+            surface: { 50: '#f8f9fb', 100: '#f0f1f5', 200: '#e4e6ed', 300: '#cdd0db', 400: '#a9afc1', 500: '#8b92a9', 600: '#747b94', 700: '#626879', 800: '#535864', 900: '#474b55', 950: '#1a1c22' },
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #0f1117; color: #e4e6ed; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #474b55; border-radius: 999px; }
+
+    .glass-panel {
+      background: rgba(26, 28, 34, 0.85);
+      backdrop-filter: blur(24px);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .input-field {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      color: #e4e6ed;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .input-field:focus {
+      outline: none;
+      border-color: #2f79fc;
+      box-shadow: 0 0 0 3px rgba(47,121,252,0.15);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #2f79fc, #1544de);
+      color: #fff;
+      font-weight: 600;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(47,121,252,0.35); }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-whatsapp {
+      background: linear-gradient(135deg, #25d366, #128c3e);
+      color: #fff;
+      font-weight: 600;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-whatsapp:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,211,102,0.35); }
+
+    .btn-publish {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+      color: #1a1c22;
+      font-weight: 600;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .btn-publish:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(245,158,11,0.35); }
+
+    .style-card {
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid transparent;
+      position: relative;
+      overflow: hidden;
+    }
+    .style-card:hover { border-color: rgba(255,255,255,0.12); }
+    .style-card.active { border-color: #2f79fc; box-shadow: 0 0 0 2px rgba(47,121,252,0.25); }
+    .style-card.active::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: rgba(47,121,252,0.08);
+      pointer-events: none;
+    }
+
+    .format-btn {
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid rgba(255,255,255,0.08);
+    }
+    .format-btn:hover { border-color: rgba(255,255,255,0.15); }
+    .format-btn.active { border-color: #2f79fc; background: rgba(47,121,252,0.1); }
+
+    .badge-selector {
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .badge-selector:hover { border-color: rgba(255,255,255,0.2); }
+    .badge-selector.active { border-color: #2f79fc; background: rgba(47,121,252,0.15); color: #569dff; }
+
+    .upload-zone {
+      border: 2px dashed rgba(255,255,255,0.12);
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+    .upload-zone:hover, .upload-zone.dragover {
+      border-color: #2f79fc;
+      background: rgba(47,121,252,0.05);
+    }
+    .upload-zone.has-image { border-style: solid; border-color: rgba(255,255,255,0.08); }
+
+    .canvas-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    .canvas-wrapper canvas {
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 8px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    }
+
+    .settings-fab {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 50;
+      width: 52px; height: 52px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #535864, #474b55);
+      border: 1px solid rgba(255,255,255,0.1);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+    .settings-fab:hover { transform: scale(1.08); box-shadow: 0 6px 24px rgba(0,0,0,0.5); }
+
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 100;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+    .modal-overlay .modal-box {
+      transform: translateY(12px) scale(0.97);
+      transition: transform 0.25s;
+    }
+    .modal-overlay.open .modal-box { transform: translateY(0) scale(1); }
+
+    .toast {
+      position: fixed;
+      bottom: 90px; right: 24px;
+      z-index: 200;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-size: 14px; font-weight: 500;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+      transform: translateY(20px);
+      opacity: 0;
+      transition: all 0.3s;
+      pointer-events: none;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { background: #128c3e; color: #fff; }
+    .toast.error { background: #dc2626; color: #fff; }
+    .toast.info { background: #1544de; color: #fff; }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(47,121,252,0.4); }
+      50% { box-shadow: 0 0 0 8px rgba(47,121,252,0); }
+    }
+
+    .section-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #8b92a9;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- HEADER -->
+  <header class="glass-panel sticky top-0 z-40 px-4 md:px-6 py-3 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
+        <i data-lucide="zap" class="w-5 h-5 text-white"></i>
+      </div>
+      <div>
+        <h1 class="text-base md:text-lg font-bold tracking-tight text-white font-outfit">AutoFlyer Pro</h1>
+        <p class="text-[10px] text-surface-500 tracking-wide uppercase hidden sm:block">Generador de Flyers Promocionales</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-surface-500 hidden md:inline">v1.0</span>
+    </div>
+  </header>
+
+  <!-- MAIN LAYOUT -->
+  <main class="flex flex-col lg:flex-row gap-4 p-4 md:p-6 max-w-[1600px] mx-auto" style="min-height: calc(100vh - 60px);">
+
+    <!-- LEFT PANEL: CONTROLS -->
+    <aside class="w-full lg:w-[420px] xl:w-[440px] flex-shrink-0 space-y-4 lg:max-h-[calc(100vh-84px)] lg:overflow-y-auto lg:pr-2">
+
+      <!-- IMAGE UPLOAD -->
+      <div class="glass-panel rounded-2xl p-5">
+        <p class="section-title flex items-center gap-2"><i data-lucide="image" class="w-3.5 h-3.5"></i> Imagen del Producto</p>
+        <div id="uploadZone" class="upload-zone rounded-xl p-6 flex flex-col items-center justify-center text-center min-h-[160px] relative">
+          <input type="file" id="imageInput" accept="image/*" capture="environment" class="absolute inset-0 opacity-0 cursor-pointer z-10" />
+          <div id="uploadPlaceholder" class="flex flex-col items-center gap-2">
+            <div class="w-12 h-12 rounded-full bg-surface-950/60 flex items-center justify-center mb-1">
+              <i data-lucide="camera" class="w-6 h-6 text-surface-400"></i>
+            </div>
+            <p class="text-sm text-surface-400">Arrastrá o tocá para subir la foto</p>
+            <p class="text-xs text-surface-600">JPG, PNG — máx. 10 MB</p>
+          </div>
+          <div id="uploadPreview" class="hidden w-full">
+            <img id="previewImg" src="" alt="Preview" class="w-full max-h-[200px] object-contain rounded-lg" />
+            <button id="removeImage" class="mt-2 text-xs text-red-400 hover:text-red-300 flex items-center gap-1 mx-auto">
+              <i data-lucide="trash-2" class="w-3 h-3"></i> Quitar imagen
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRODUCT DATA -->
+      <div class="glass-panel rounded-2xl p-5 space-y-4">
+        <p class="section-title flex items-center gap-2"><i data-lucide="package" class="w-3.5 h-3.5"></i> Datos del Producto</p>
+
+        <div>
+          <label class="text-xs text-surface-400 mb-1 block">Nombre del Producto</label>
+          <input id="productName" type="text" class="input-field w-full rounded-xl px-4 py-2.5 text-sm" placeholder='Ej: Alfajor Cofler Block 60g' />
+        </div>
+
+        <div>
+          <label class="text-xs text-surface-400 mb-1 block">Presentación / Bulto</label>
+          <input id="productPresentation" type="text" class="input-field w-full rounded-xl px-4 py-2.5 text-sm" placeholder='Ej: Caja x 12 unidades' />
+        </div>
+
+        <div>
+          <label class="text-xs text-surface-400 mb-1 block">Precio Promocional</label>
+          <input id="productPrice" type="text" class="input-field w-full rounded-xl px-4 py-2.5 text-sm" placeholder='Ej: $ 9.800' />
+        </div>
+      </div>
+
+      <!-- BADGE -->
+      <div class="glass-panel rounded-2xl p-5">
+        <p class="section-title flex items-center gap-2"><i data-lucide="tag" class="w-3.5 h-3.5"></i> Etiqueta / Sello</p>
+        <div id="badgeContainer" class="flex flex-wrap gap-2">
+          <button data-badge="OFERTA" class="badge-selector active rounded-full px-4 py-1.5 text-xs font-semibold">OFERTA</button>
+          <button data-badge="NOVEDAD" class="badge-selector rounded-full px-4 py-1.5 text-xs font-semibold">NOVEDAD</button>
+          <button data-badge="SUPER PRECIO" class="badge-selector rounded-full px-4 py-1.5 text-xs font-semibold">SUPER PRECIO</button>
+          <button data-badge="LIQUIDACIÓN" class="badge-selector rounded-full px-4 py-1.5 text-xs font-semibold">LIQUIDACIÓN</button>
+        </div>
+      </div>
+
+      <!-- STYLE SELECTOR -->
+      <div class="glass-panel rounded-2xl p-5">
+        <p class="section-title flex items-center gap-2"><i data-lucide="palette" class="w-3.5 h-3.5"></i> Estilo Visual</p>
+        <div id="styleContainer" class="grid grid-cols-1 gap-2">
+          <div data-style="retail" class="style-card active rounded-xl p-3 flex items-center gap-3 glass-panel">
+            <div class="w-10 h-10 rounded-lg flex-shrink-0 flex items-center justify-center" style="background: linear-gradient(135deg, #ef4444, #f59e0b);">
+              <i data-lucide="flame" class="w-5 h-5 text-white"></i>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-white">Retail Impacto</p>
+              <p class="text-[10px] text-surface-500">Degradados fuertes · Sello amarillo/rojo</p>
+            </div>
+          </div>
+          <div data-style="b2b" class="style-card rounded-xl p-3 flex items-center gap-3 glass-panel">
+            <div class="w-10 h-10 rounded-lg flex-shrink-0 flex items-center justify-center" style="background: linear-gradient(135deg, #1e40af, #3b82f6);">
+              <i data-lucide="briefcase" class="w-5 h-5 text-white"></i>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-white">B2B Mayorista</p>
+              <p class="text-[10px] text-surface-500">Marco limpio · Tipografía sobria</p>
+            </div>
+          </div>
+          <div data-style="dark" class="style-card rounded-xl p-3 flex items-center gap-3 glass-panel">
+            <div class="w-10 h-10 rounded-lg flex-shrink-0 flex items-center justify-center" style="background: linear-gradient(135deg, #18181b, #6d28d9);">
+              <i data-lucide="moon" class="w-5 h-5 text-white"></i>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-white">Dark Modern</p>
+              <p class="text-[10px] text-surface-500">Fondo oscuro · Contraste neón</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FORMAT SELECTOR -->
+      <div class="glass-panel rounded-2xl p-5">
+        <p class="section-title flex items-center gap-2"><i data-lucide="ratio" class="w-3.5 h-3.5"></i> Formato de Salida</p>
+        <div id="formatContainer" class="grid grid-cols-2 gap-2">
+          <button data-format="square" class="format-btn active rounded-xl p-3 flex flex-col items-center gap-2">
+            <div class="w-8 h-8 border-2 border-current rounded-md opacity-60"></div>
+            <div class="text-center">
+              <p class="text-xs font-semibold">1:1 Cuadrado</p>
+              <p class="text-[10px] text-surface-500">Feed IG / FB</p>
+            </div>
+          </button>
+          <button data-format="story" class="format-btn rounded-xl p-3 flex flex-col items-center gap-2">
+            <div class="w-5 h-8 border-2 border-current rounded-md opacity-60"></div>
+            <div class="text-center">
+              <p class="text-xs font-semibold">9:16 Vertical</p>
+              <p class="text-[10px] text-surface-500">Stories / WA</p>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      <!-- ACTION BUTTONS -->
+      <div class="space-y-2 pb-4 lg:pb-0">
+        <button id="btnDownload" class="btn-primary w-full rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-sm">
+          <i data-lucide="download" class="w-4 h-4"></i> Descargar Flyer (HD)
+        </button>
+        <div class="grid grid-cols-2 gap-2">
+          <button id="btnWhatsapp" class="btn-whatsapp rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-sm">
+            <i data-lucide="message-circle" class="w-4 h-4"></i> WhatsApp
+          </button>
+          <button id="btnPublish" class="btn-publish rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-sm">
+            <i data-lucide="send" class="w-4 h-4"></i> Publicar
+          </button>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- RIGHT PANEL: CANVAS PREVIEW -->
+    <section class="flex-1 flex flex-col items-center justify-center glass-panel rounded-2xl p-4 md:p-6 min-h-[400px] lg:min-h-0 lg:sticky lg:top-[76px]" style="max-height: calc(100vh - 84px);">
+      <p class="section-title mb-3 flex items-center gap-2"><i data-lucide="monitor" class="w-3.5 h-3.5"></i> Vista Previa del Flyer</p>
+      <div class="canvas-wrapper flex-1 w-full flex items-center justify-center overflow-hidden">
+        <canvas id="flyerCanvas"></canvas>
+      </div>
+      <p class="text-[10px] text-surface-600 mt-3 text-center">El flyer se genera en resolución HD para imprimir o compartir</p>
+    </section>
+
+  </main>
+
+  <!-- SETTINGS FAB -->
+  <button id="settingsFab" class="settings-fab" title="Configuración Webhook">
+    <i data-lucide="settings" class="w-5 h-5 text-surface-300"></i>
+  </button>
+
+  <!-- SETTINGS MODAL -->
+  <div id="settingsModal" class="modal-overlay">
+    <div class="modal-box glass-panel rounded-2xl p-6 w-[90%] max-w-md space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-bold text-white font-outfit flex items-center gap-2">
+          <i data-lucide="webhook" class="w-5 h-5 text-brand-400"></i> Configuración
+        </h2>
+        <button id="closeSettings" class="w-8 h-8 rounded-lg hover:bg-white/5 flex items-center justify-center">
+          <i data-lucide="x" class="w-4 h-4 text-surface-400"></i>
+        </button>
+      </div>
+      <div>
+        <label class="text-xs text-surface-400 mb-1 block">Webhook URL (Make.com / n8n)</label>
+        <input id="webhookUrl" type="url" class="input-field w-full rounded-xl px-4 py-2.5 text-sm" placeholder="https://hook.us1.make.com/..." />
+        <p class="text-[10px] text-surface-600 mt-1">Se almacena localmente en tu navegador.</p>
+      </div>
+      <button id="saveWebhook" class="btn-primary w-full rounded-xl px-4 py-2.5 text-sm">Guardar Configuración</button>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast"></div>
+
+  <!-- ========================= JAVASCRIPT ========================= -->
+  <script>
+  (function() {
+    'use strict';
+
+    // ── Refs ───────────────────────────────────────────────────────
+    const canvas = document.getElementById('flyerCanvas');
+    const ctx = canvas.getContext('2d');
+    const imageInput = document.getElementById('imageInput');
+    const uploadZone = document.getElementById('uploadZone');
+    const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+    const uploadPreview = document.getElementById('uploadPreview');
+    const previewImg = document.getElementById('previewImg');
+    const removeImageBtn = document.getElementById('removeImage');
+    const nameInput = document.getElementById('productName');
+    const presentationInput = document.getElementById('productPresentation');
+    const priceInput = document.getElementById('productPrice');
+    const badgeContainer = document.getElementById('badgeContainer');
+    const styleContainer = document.getElementById('styleContainer');
+    const formatContainer = document.getElementById('formatContainer');
+    const btnDownload = document.getElementById('btnDownload');
+    const btnWhatsapp = document.getElementById('btnWhatsapp');
+    const btnPublish = document.getElementById('btnPublish');
+    const settingsFab = document.getElementById('settingsFab');
+    const settingsModal = document.getElementById('settingsModal');
+    const closeSettings = document.getElementById('closeSettings');
+    const webhookUrlInput = document.getElementById('webhookUrl');
+    const saveWebhookBtn = document.getElementById('saveWebhook');
+    const toastEl = document.getElementById('toast');
+
+    // ── State ──────────────────────────────────────────────────────
+    let state = {
+      image: null,        // HTMLImageElement
+      imageSrc: null,      // base64
+      name: '',
+      presentation: '',
+      price: '',
+      badge: 'OFERTA',
+      style: 'retail',     // retail | b2b | dark
+      format: 'square',    // square | story
+      webhookUrl: localStorage.getItem('autoflyer_webhook_url') || ''
+    };
+
+    webhookUrlInput.value = state.webhookUrl;
+
+    // ── Toast ──────────────────────────────────────────────────────
+    let toastTimer = null;
+    function showToast(msg, type = 'info') {
+      clearTimeout(toastTimer);
+      toastEl.textContent = msg;
+      toastEl.className = 'toast ' + type;
+      requestAnimationFrame(() => toastEl.classList.add('show'));
+      toastTimer = setTimeout(() => toastEl.classList.remove('show'), 3500);
+    }
+
+    // ── Image Upload ───────────────────────────────────────────────
+    imageInput.addEventListener('change', handleImageSelect);
+    uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+    uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+    uploadZone.addEventListener('drop', e => {
+      e.preventDefault();
+      uploadZone.classList.remove('dragover');
+      if (e.dataTransfer.files.length) {
+        imageInput.files = e.dataTransfer.files;
+        handleImageSelect();
+      }
+    });
+
+    function handleImageSelect() {
+      const file = imageInput.files[0];
+      if (!file) return;
+      if (file.size > 10 * 1024 * 1024) {
+        showToast('La imagen supera los 10 MB', 'error');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = e => {
+        state.imageSrc = e.target.result;
+        const img = new Image();
+        img.onload = () => {
+          state.image = img;
+          previewImg.src = state.imageSrc;
+          uploadPlaceholder.classList.add('hidden');
+          uploadPreview.classList.remove('hidden');
+          uploadZone.classList.add('has-image');
+          renderFlyer();
+        };
+        img.src = state.imageSrc;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    removeImageBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      state.image = null;
+      state.imageSrc = null;
+      imageInput.value = '';
+      uploadPlaceholder.classList.remove('hidden');
+      uploadPreview.classList.add('hidden');
+      uploadZone.classList.remove('has-image');
+      renderFlyer();
+    });
+
+    // ── Form Inputs ────────────────────────────────────────────────
+    nameInput.addEventListener('input', () => { state.name = nameInput.value; renderFlyer(); });
+    presentationInput.addEventListener('input', () => { state.presentation = presentationInput.value; renderFlyer(); });
+    priceInput.addEventListener('input', () => { state.price = priceInput.value; renderFlyer(); });
+
+    // ── Badge Selector ─────────────────────────────────────────────
+    badgeContainer.addEventListener('click', e => {
+      const btn = e.target.closest('[data-badge]');
+      if (!btn) return;
+      badgeContainer.querySelectorAll('.badge-selector').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.badge = btn.dataset.badge;
+      renderFlyer();
+    });
+
+    // ── Style Selector ─────────────────────────────────────────────
+    styleContainer.addEventListener('click', e => {
+      const card = e.target.closest('[data-style]');
+      if (!card) return;
+      styleContainer.querySelectorAll('.style-card').forEach(c => c.classList.remove('active'));
+      card.classList.add('active');
+      state.style = card.dataset.style;
+      renderFlyer();
+    });
+
+    // ── Format Selector ────────────────────────────────────────────
+    formatContainer.addEventListener('click', e => {
+      const btn = e.target.closest('[data-format]');
+      if (!btn) return;
+      formatContainer.querySelectorAll('.format-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.format = btn.dataset.format;
+      renderFlyer();
+    });
+
+    // ── Settings Modal ─────────────────────────────────────────────
+    settingsFab.addEventListener('click', () => settingsModal.classList.add('open'));
+    closeSettings.addEventListener('click', () => settingsModal.classList.remove('open'));
+    settingsModal.addEventListener('click', e => { if (e.target === settingsModal) settingsModal.classList.remove('open'); });
+    saveWebhookBtn.addEventListener('click', () => {
+      state.webhookUrl = webhookUrlInput.value.trim();
+      localStorage.setItem('autoflyer_webhook_url', state.webhookUrl);
+      settingsModal.classList.remove('open');
+      showToast('Webhook guardado correctamente', 'success');
+    });
+
+    // ── Download ───────────────────────────────────────────────────
+    btnDownload.addEventListener('click', () => {
+      canvas.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const fileName = (state.name || 'flyer').replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ\s]/g, '').replace(/\s+/g, '_');
+        a.download = `AutoFlyer_${fileName}_${state.format}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Flyer descargado exitosamente', 'success');
+      }, 'image/png');
+    });
+
+    // ── WhatsApp ───────────────────────────────────────────────────
+    btnWhatsapp.addEventListener('click', async () => {
+      const text = `🔥 *${state.badge}* — ${state.name || 'Producto'}\n📦 ${state.presentation || ''}\n💰 ${state.price || ''}\n\n📲 Consultanos por stock disponible`;
+      if (navigator.share) {
+        try {
+          const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+          const file = new File([blob], 'flyer.png', { type: 'image/png' });
+          await navigator.share({ text, files: [file] });
+          showToast('Compartido exitosamente', 'success');
+        } catch (err) {
+          if (err.name !== 'AbortError') {
+            window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+            canvas.toBlob(blob => {
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url; a.download = 'flyer.png'; a.click();
+              URL.revokeObjectURL(url);
+            }, 'image/png');
+          }
+        }
+      } else {
+        window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
+        canvas.toBlob(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url; a.download = 'flyer.png'; a.click();
+          URL.revokeObjectURL(url);
+        }, 'image/png');
+        showToast('Imagen descargada. Adjuntala al chat.', 'info');
+      }
+    });
+
+    // ── Publish Webhook ────────────────────────────────────────────
+    btnPublish.addEventListener('click', async () => {
+      if (!state.webhookUrl) {
+        showToast('Configurá primero la URL del Webhook ⚙️', 'error');
+        settingsModal.classList.add('open');
+        return;
+      }
+      showToast('Enviando flyer al webhook...', 'info');
+      try {
+        const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
+        const base64 = await blobToBase64(blob);
+        const payload = {
+          image_base64: base64,
+          product_name: state.name,
+          presentation: state.presentation,
+          price: state.price,
+          badge: state.badge,
+          style: state.style,
+          format: state.format,
+          caption: `🔥 ${state.badge} — ${state.name || 'Producto'}\n📦 ${state.presentation || ''}\n💰 ${state.price || ''}\n📲 Consultanos por stock disponible`,
+          timestamp: new Date().toISOString()
+        };
+        const res = await fetch(state.webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          showToast('¡Flyer publicado exitosamente! 🎉', 'success');
+        } else {
+          showToast(`Error del servidor: ${res.status}`, 'error');
+        }
+      } catch (err) {
+        showToast('Error de conexión: ' + err.message, 'error');
+      }
+    });
+
+    function blobToBase64(blob) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+      });
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // ██  CANVAS RENDERING ENGINE
+    // ══════════════════════════════════════════════════════════════
+
+    function getDims() {
+      return state.format === 'square'
+        ? { w: 1080, h: 1080 }
+        : { w: 1080, h: 1920 };
+    }
+
+    // ── Text Helpers ──────────────────────────────────────────────
+    function setFont(size, weight, family) {
+      ctx.font = `${weight} ${size}px ${family}`;
+    }
+
+    function wrapText(text, x, y, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let line = '';
+      let ly = y;
+      for (let i = 0; i < words.length; i++) {
+        const testLine = line + words[i] + ' ';
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && i > 0) {
+          ctx.fillText(line.trim(), x, ly);
+          line = words[i] + ' ';
+          ly += lineHeight;
+        } else {
+          line = testLine;
+        }
+      }
+      ctx.fillText(line.trim(), x, ly);
+      return ly;
+    }
+
+    function measureWrappedHeight(text, maxWidth, lineHeight) {
+      const words = text.split(' ');
+      let line = '';
+      let lines = 1;
+      for (let i = 0; i < words.length; i++) {
+        const testLine = line + words[i] + ' ';
+        const metrics = ctx.measureText(testLine);
+        if (metrics.width > maxWidth && i > 0) {
+          line = words[i] + ' ';
+          lines++;
+        } else {
+          line = testLine;
+        }
+      }
+      return lines * lineHeight;
+    }
+
+    function roundRect(x, y, w, h, r) {
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+      ctx.lineTo(x + r, y + h);
+      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+      ctx.closePath();
+    }
+
+    function drawImageCover(img, x, y, w, h) {
+      const imgRatio = img.width / img.height;
+      const boxRatio = w / h;
+      let sw, sh, sx, sy;
+      if (imgRatio > boxRatio) {
+        sh = img.height;
+        sw = sh * boxRatio;
+        sx = (img.width - sw) / 2;
+        sy = 0;
+      } else {
+        sw = img.width;
+        sh = sw / boxRatio;
+        sx = 0;
+        sy = (img.height - sh) / 2;
+      }
+      ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+    }
+
+    function drawImageContain(img, x, y, w, h) {
+      const imgRatio = img.width / img.height;
+      const boxRatio = w / h;
+      let dw, dh;
+      if (imgRatio > boxRatio) {
+        dw = w;
+        dh = w / imgRatio;
+      } else {
+        dh = h;
+        dw = h * imgRatio;
+      }
+      const dx = x + (w - dw) / 2;
+      const dy = y + (h - dh) / 2;
+      ctx.drawImage(img, dx, dy, dw, dh);
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // ██  STYLE: RETAIL IMPACTO
+    // ══════════════════════════════════════════════════════════════
+    function renderRetail(W, H) {
+      const isSquare = state.format === 'square';
+      const pad = 50;
+
+      // Background gradient
+      const bgGrad = ctx.createLinearGradient(0, 0, W, H);
+      bgGrad.addColorStop(0, '#dc2626');
+      bgGrad.addColorStop(0.5, '#b91c1c');
+      bgGrad.addColorStop(1, '#991b1b');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Decorative diagonal stripes
+      ctx.save();
+      ctx.globalAlpha = 0.06;
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 40;
+      for (let i = -H; i < W + H; i += 120) {
+        ctx.beginPath();
+        ctx.moveTo(i, 0);
+        ctx.lineTo(i + H, H);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // Top badge banner
+      const bannerH = isSquare ? 110 : 130;
+      const bannerGrad = ctx.createLinearGradient(0, 0, W, 0);
+      bannerGrad.addColorStop(0, '#f59e0b');
+      bannerGrad.addColorStop(1, '#eab308');
+      ctx.fillStyle = bannerGrad;
+      ctx.fillRect(0, 0, W, bannerH);
+
+      // Badge text
+      setFont(isSquare ? 52 : 58, '900', '"Inter", sans-serif');
+      ctx.fillStyle = '#1a1c22';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(state.badge || 'OFERTA', W / 2, bannerH / 2);
+
+      // Triangular cut at the bottom of banner
+      ctx.fillStyle = bannerGrad;
+      ctx.beginPath();
+      ctx.moveTo(W / 2 - 40, bannerH);
+      ctx.lineTo(W / 2, bannerH + 25);
+      ctx.lineTo(W / 2 + 40, bannerH);
+      ctx.closePath();
+      ctx.fill();
+
+      // Product image area
+      const imgAreaTop = bannerH + 40;
+      const imgAreaH = isSquare ? 480 : 820;
+
+      if (state.image) {
+        // White card behind image
+        ctx.save();
+        const cardMargin = 60;
+        roundRect(cardMargin, imgAreaTop, W - cardMargin * 2, imgAreaH, 24);
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = 'rgba(0,0,0,0.3)';
+        ctx.shadowBlur = 30;
+        ctx.shadowOffsetY = 10;
+        ctx.fill();
+        ctx.restore();
+
+        // Image inside card
+        ctx.save();
+        roundRect(cardMargin + 15, imgAreaTop + 15, W - (cardMargin + 15) * 2, imgAreaH - 30, 16);
+        ctx.clip();
+        drawImageContain(state.image, cardMargin + 15, imgAreaTop + 15, W - (cardMargin + 15) * 2, imgAreaH - 30);
+        ctx.restore();
+      } else {
+        // Placeholder
+        ctx.save();
+        const cardMargin = 60;
+        roundRect(cardMargin, imgAreaTop, W - cardMargin * 2, imgAreaH, 24);
+        ctx.fillStyle = 'rgba(255,255,255,0.1)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
+        setFont(18, '500', '"Inter", sans-serif');
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('📷 Subí tu foto de producto', W / 2, imgAreaTop + imgAreaH / 2);
+      }
+
+      // Bottom section
+      const bottomStart = imgAreaTop + imgAreaH + 30;
+      const bottomH = H - bottomStart;
+
+      // Dark bottom card
+      ctx.save();
+      roundRect(pad, bottomStart, W - pad * 2, bottomH - pad, 24);
+      ctx.fillStyle = 'rgba(0,0,0,0.7)';
+      ctx.fill();
+      ctx.restore();
+
+      // Product name
+      const nameY = bottomStart + (isSquare ? 40 : 50);
+      setFont(isSquare ? 38 : 44, '800', '"Inter", sans-serif');
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      const maxTextW = W - pad * 2 - 60;
+      const lastLineY = wrapText(state.name || 'Nombre del Producto', W / 2, nameY, maxTextW, isSquare ? 46 : 52);
+
+      // Presentation
+      if (state.presentation) {
+        setFont(isSquare ? 22 : 26, '500', '"Inter", sans-serif');
+        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.fillText(state.presentation, W / 2, lastLineY + (isSquare ? 40 : 48));
+      }
+
+      // Price box
+      const priceBoxH = isSquare ? 80 : 95;
+      const priceBoxW = Math.min(W - pad * 2 - 40, 500);
+      const priceBoxY = H - pad - priceBoxH - (isSquare ? 60 : 80);
+      const priceBoxX = (W - priceBoxW) / 2;
+
+      const priceGrad = ctx.createLinearGradient(priceBoxX, priceBoxY, priceBoxX + priceBoxW, priceBoxY);
+      priceGrad.addColorStop(0, '#f59e0b');
+      priceGrad.addColorStop(1, '#f97316');
+      ctx.save();
+      roundRect(priceBoxX, priceBoxY, priceBoxW, priceBoxH, 16);
+      ctx.fillStyle = priceGrad;
+      ctx.shadowColor = 'rgba(245,158,11,0.4)';
+      ctx.shadowBlur = 20;
+      ctx.fill();
+      ctx.restore();
+
+      setFont(isSquare ? 46 : 54, '900', '"Inter", sans-serif');
+      ctx.fillStyle = '#1a1c22';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(state.price || '$ 0.000', W / 2, priceBoxY + priceBoxH / 2);
+
+      // Footer CTA
+      setFont(isSquare ? 16 : 18, '500', '"Inter", sans-serif');
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.textAlign = 'center';
+      ctx.fillText('📲 Consultanos por stock disponible', W / 2, H - pad - (isSquare ? 18 : 25));
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // ██  STYLE: B2B MAYORISTA
+    // ══════════════════════════════════════════════════════════════
+    function renderB2B(W, H) {
+      const isSquare = state.format === 'square';
+      const pad = 50;
+
+      // Clean white background
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(0, 0, W, H);
+
+      // Top blue header bar
+      const headerH = isSquare ? 130 : 160;
+      const headerGrad = ctx.createLinearGradient(0, 0, W, 0);
+      headerGrad.addColorStop(0, '#1e3a5f');
+      headerGrad.addColorStop(1, '#1e40af');
+      ctx.fillStyle = headerGrad;
+      ctx.fillRect(0, 0, W, headerH);
+
+      // Subtle grid pattern
+      ctx.save();
+      ctx.globalAlpha = 0.04;
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < W; x += 40) {
+        ctx.beginPath(); ctx.moveTo(x, headerH); ctx.lineTo(x, H); ctx.stroke();
+      }
+      for (let y = headerH; y < H; y += 40) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      }
+      ctx.restore();
+
+      // Badge in header
+      setFont(isSquare ? 18 : 20, '700', '"Inter", sans-serif');
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+
+      // Badge pill
+      const badgeText = state.badge || 'OFERTA';
+      const badgeMetrics = ctx.measureText(badgeText);
+      const badgePillW = badgeMetrics.width + 32;
+      const badgePillH = 36;
+      const badgePillX = pad;
+      const badgePillY = headerH / 2 - badgePillH / 2 - 16;
+      roundRect(badgePillX, badgePillY, badgePillW, badgePillH, 8);
+      ctx.fillStyle = '#f59e0b';
+      ctx.fill();
+      ctx.fillStyle = '#1a1c22';
+      setFont(isSquare ? 15 : 16, '700', '"Inter", sans-serif');
+      ctx.fillText(badgeText, badgePillX + 16, badgePillY + badgePillH / 2);
+
+      // Header title: "DISTRIBUCIÓN MAYORISTA"
+      setFont(isSquare ? 13 : 14, '600', '"Inter", sans-serif');
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.textAlign = 'left';
+      ctx.fillText('DISTRIBUCIÓN MAYORISTA', pad, headerH / 2 + 16);
+
+      // Right side: Price in header
+      setFont(isSquare ? 42 : 48, '900', '"Inter", sans-serif');
+      ctx.fillStyle = '#ffffff';
+      ctx.textAlign = 'right';
+      ctx.fillText(state.price || '$ 0.000', W - pad, headerH / 2);
+
+      // Content area
+      const contentTop = headerH + 30;
+      const imgAreaW = W - pad * 2;
+      const imgAreaH = isSquare ? 500 : 900;
+
+      // Light card for image
+      ctx.save();
+      roundRect(pad, contentTop, imgAreaW, imgAreaH, 16);
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = 'rgba(0,0,0,0.08)';
+      ctx.shadowBlur = 20;
+      ctx.shadowOffsetY = 4;
+      ctx.fill();
+      ctx.restore();
+
+      // Border
+      roundRect(pad, contentTop, imgAreaW, imgAreaH, 16);
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      if (state.image) {
+        ctx.save();
+        roundRect(pad + 10, contentTop + 10, imgAreaW - 20, imgAreaH - 20, 12);
+        ctx.clip();
+        drawImageContain(state.image, pad + 10, contentTop + 10, imgAreaW - 20, imgAreaH - 20);
+        ctx.restore();
+      } else {
+        setFont(18, '500', '"Inter", sans-serif');
+        ctx.fillStyle = '#94a3b8';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('📷 Subí tu foto de producto', W / 2, contentTop + imgAreaH / 2);
+      }
+
+      // Product info section
+      const infoTop = contentTop + imgAreaH + 30;
+
+      // Thin separator line
+      ctx.beginPath();
+      ctx.moveTo(pad, infoTop);
+      ctx.lineTo(W - pad, infoTop);
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Product name
+      setFont(isSquare ? 34 : 40, '800', '"Inter", sans-serif');
+      ctx.fillStyle = '#1e293b';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      const nameLastY = wrapText(state.name || 'Nombre del Producto', pad, infoTop + 24, W - pad * 2, isSquare ? 42 : 48);
+
+      // Presentation
+      if (state.presentation) {
+        setFont(isSquare ? 22 : 24, '500', '"Inter", sans-serif');
+        ctx.fillStyle = '#64748b';
+        ctx.fillText(state.presentation, pad, nameLastY + (isSquare ? 30 : 36));
+      }
+
+      // Footer bar
+      const footerH = isSquare ? 70 : 80;
+      ctx.fillStyle = '#1e293b';
+      ctx.fillRect(0, H - footerH, W, footerH);
+
+      setFont(isSquare ? 16 : 18, '500', '"Inter", sans-serif');
+      ctx.fillStyle = 'rgba(255,255,255,0.7)';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('📲 Consultanos por stock disponible', W / 2, H - footerH / 2);
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // ██  STYLE: DARK MODERN
+    // ══════════════════════════════════════════════════════════════
+    function renderDark(W, H) {
+      const isSquare = state.format === 'square';
+      const pad = 50;
+
+      // Deep dark background
+      ctx.fillStyle = '#0a0a0f';
+      ctx.fillRect(0, 0, W, H);
+
+      // Subtle radial vignette
+      const vignetteGrad = ctx.createRadialGradient(W / 2, H * 0.4, 0, W / 2, H * 0.4, W * 0.9);
+      vignetteGrad.addColorStop(0, 'rgba(100, 50, 200, 0.08)');
+      vignetteGrad.addColorStop(0.5, 'rgba(50, 20, 120, 0.04)');
+      vignetteGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = vignetteGrad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Neon accent line at top
+      const neonGrad = ctx.createLinearGradient(0, 0, W, 0);
+      neonGrad.addColorStop(0, '#06b6d4');
+      neonGrad.addColorStop(0.5, '#8b5cf6');
+      neonGrad.addColorStop(1, '#ec4899');
+      ctx.fillStyle = neonGrad;
+      ctx.fillRect(0, 0, W, 4);
+
+      // Glow effect for the line
+      ctx.save();
+      ctx.shadowColor = '#8b5cf6';
+      ctx.shadowBlur = 30;
+      ctx.fillStyle = neonGrad;
+      ctx.fillRect(0, 0, W, 2);
+      ctx.restore();
+
+      // Badge with neon border
+      const badgeText = state.badge || 'OFERTA';
+      setFont(isSquare ? 16 : 18, '700', '"Inter", sans-serif');
+      const badgeMetrics = ctx.measureText(badgeText);
+      const bpW = badgeMetrics.width + 40;
+      const bpH = 40;
+      const bpX = pad;
+      const bpY = 40;
+
+      ctx.save();
+      roundRect(bpX, bpY, bpW, bpH, 10);
+      ctx.strokeStyle = '#8b5cf6';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = '#8b5cf6';
+      ctx.shadowBlur = 15;
+      ctx.stroke();
+      ctx.restore();
+
+      roundRect(bpX, bpY, bpW, bpH, 10);
+      ctx.fillStyle = 'rgba(139,92,246,0.12)';
+      ctx.fill();
+
+      ctx.fillStyle = '#c4b5fd';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(badgeText, bpX + 20, bpY + bpH / 2);
+
+      // Product image area
+      const imgAreaTop = bpY + bpH + 30;
+      const imgAreaH = isSquare ? 480 : 850;
+      const imgAreaW = W - pad * 2;
+
+      if (state.image) {
+        // Glassmorphism card
+        ctx.save();
+        roundRect(pad, imgAreaTop, imgAreaW, imgAreaH, 20);
+        ctx.fillStyle = 'rgba(255,255,255,0.03)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.restore();
+
+        ctx.save();
+        roundRect(pad + 12, imgAreaTop + 12, imgAreaW - 24, imgAreaH - 24, 14);
+        ctx.clip();
+        drawImageContain(state.image, pad + 12, imgAreaTop + 12, imgAreaW - 24, imgAreaH - 24);
+        ctx.restore();
+      } else {
+        ctx.save();
+        roundRect(pad, imgAreaTop, imgAreaW, imgAreaH, 20);
+        ctx.fillStyle = 'rgba(255,255,255,0.02)';
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.restore();
+        setFont(18, '500', '"Inter", sans-serif');
+        ctx.fillStyle = 'rgba(255,255,255,0.25)';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('📷 Subí tu foto de producto', W / 2, imgAreaTop + imgAreaH / 2);
+      }
+
+      // Bottom section
+      const bottomY = imgAreaTop + imgAreaH + 30;
+
+      // Product name with neon tint
+      setFont(isSquare ? 38 : 44, '800', '"Inter", sans-serif');
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = '#f1f5f9';
+      const nameLastY = wrapText(state.name || 'Nombre del Producto', pad, bottomY, W - pad * 2, isSquare ? 46 : 52);
+
+      // Presentation
+      if (state.presentation) {
+        setFont(isSquare ? 20 : 24, '500', '"Inter", sans-serif');
+        ctx.fillStyle = 'rgba(255,255,255,0.4)';
+        ctx.fillText(state.presentation, pad, nameLastY + (isSquare ? 30 : 36));
+      }
+
+      // Price box with neon glow
+      const priceBoxH = isSquare ? 80 : 95;
+      const priceBoxW = W - pad * 2;
+      const priceBoxY = H - pad - priceBoxH - (isSquare ? 55 : 70);
+      const priceBoxX = pad;
+
+      ctx.save();
+      roundRect(priceBoxX, priceBoxY, priceBoxW, priceBoxH, 16);
+      const priceGrad = ctx.createLinearGradient(priceBoxX, priceBoxY, priceBoxX + priceBoxW, priceBoxY);
+      priceGrad.addColorStop(0, 'rgba(6,182,212,0.15)');
+      priceGrad.addColorStop(1, 'rgba(139,92,246,0.15)');
+      ctx.fillStyle = priceGrad;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(139,92,246,0.3)';
+      ctx.lineWidth = 1.5;
+      ctx.shadowColor = '#8b5cf6';
+      ctx.shadowBlur = 20;
+      ctx.stroke();
+      ctx.restore();
+
+      setFont(isSquare ? 46 : 54, '900', '"Inter", sans-serif');
+      ctx.fillStyle = '#c4b5fd';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.save();
+      ctx.shadowColor = '#8b5cf6';
+      ctx.shadowBlur = 10;
+      ctx.fillText(state.price || '$ 0.000', W / 2, priceBoxY + priceBoxH / 2);
+      ctx.restore();
+
+      // Footer CTA
+      setFont(isSquare ? 15 : 17, '500', '"Inter", sans-serif');
+      ctx.fillStyle = 'rgba(255,255,255,0.3)';
+      ctx.textAlign = 'center';
+      ctx.fillText('📲 Consultanos por stock disponible', W / 2, H - pad - (isSquare ? 12 : 20));
+
+      // Bottom neon accent line
+      ctx.fillStyle = neonGrad;
+      ctx.fillRect(0, H - 4, W, 4);
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // ██  MAIN RENDER
+    // ══════════════════════════════════════════════════════════════
+    function renderFlyer() {
+      const { w, h } = getDims();
+      canvas.width = w;
+      canvas.height = h;
+
+      ctx.clearRect(0, 0, w, h);
+
+      switch (state.style) {
+        case 'retail': renderRetail(w, h); break;
+        case 'b2b':    renderB2B(w, h);    break;
+        case 'dark':   renderDark(w, h);   break;
+      }
+    }
+
+    // ── Init ──────────────────────────────────────────────────────
+    lucide.createIcons();
+    renderFlyer();
+
+  })();
+  </script>
+
+</body>
+</html>
