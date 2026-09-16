@@ -588,17 +588,28 @@
       }
       showToast('Enviando flyer al webhook...', 'info');
       try {
-        const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
-        const base64 = await blobToBase64(blob);
+        // Exportar canvas como JPEG comprimido (calidad 85%)
+        const dataURL = canvas.toDataURL('image/jpeg', 0.85);
+        // Eliminar prefijo data URI → Base64 puro
+        const cleanBase64 = dataURL.split(',')[1];
+
+        // Construir caption descriptivo (nunca vacío, evita errores en API de Facebook)
+        const productName = state.name || 'Producto';
+        const parts = [`🔥 ${state.badge} — ${productName}`];
+        if (state.presentation) parts.push(`📦 ${state.presentation}`);
+        if (state.price) parts.push(`💰 ${state.price}`);
+        parts.push('📲 Consultanos por stock disponible');
+        const caption = parts.join('\n');
+
         const payload = {
-          image_base64: base64,
-          product_name: state.name,
-          presentation: state.presentation,
-          price: state.price,
+          image_base64: cleanBase64,
+          caption: caption,
+          product_name: productName,
+          presentation: state.presentation || '',
+          price: state.price || '',
           badge: state.badge,
           style: state.style,
           format: state.format,
-          caption: `🔥 ${state.badge} — ${state.name || 'Producto'}\n📦 ${state.presentation || ''}\n💰 ${state.price || ''}\n📲 Consultanos por stock disponible`,
           timestamp: new Date().toISOString()
         };
         const res = await fetch(state.webhookUrl, {
