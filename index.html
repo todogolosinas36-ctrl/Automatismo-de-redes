@@ -81,9 +81,17 @@
       background: linear-gradient(135deg, #f59e0b, #d97706);
       color: #1a1c22;
       font-weight: 600;
-      transition: transform 0.15s, box-shadow 0.15s;
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.2s;
     }
-    .btn-publish:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(245,158,11,0.35); }
+    .btn-publish:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(245,158,11,0.35); }
+    .btn-publish:disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+      filter: grayscale(0.6);
+      pointer-events: none;
+    }
 
     .format-btn {
       cursor: pointer;
@@ -92,6 +100,29 @@
     }
     .format-btn:hover { border-color: rgba(255,255,255,0.15); }
     .format-btn.active { border-color: #2f79fc; background: rgba(47,121,252,0.1); }
+
+    .channel-chip {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
+    }
+    .channel-chip:hover {
+      border-color: rgba(255,255,255,0.18);
+    }
+    .channel-chip:has(input[value="facebook"]:checked) {
+      border-color: rgba(24, 119, 242, 0.6) !important;
+      background: rgba(24, 119, 242, 0.12) !important;
+      box-shadow: 0 0 16px rgba(24, 119, 242, 0.15);
+    }
+    .channel-chip:has(input[value="instagram"]:checked) {
+      border-color: rgba(221, 42, 123, 0.6) !important;
+      background: rgba(221, 42, 123, 0.12) !important;
+      box-shadow: 0 0 16px rgba(221, 42, 123, 0.15);
+    }
+    .channel-chip:has(input[value="whatsapp"]:checked) {
+      border-color: rgba(37, 211, 102, 0.6) !important;
+      background: rgba(37, 211, 102, 0.12) !important;
+      box-shadow: 0 0 16px rgba(37, 211, 102, 0.15);
+    }
 
     .upload-zone {
       border: 2px dashed rgba(255,255,255,0.12);
@@ -109,12 +140,25 @@
       align-items: center;
       justify-content: center;
       position: relative;
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      padding: 4px;
     }
     .canvas-wrapper canvas {
       max-width: 100%;
-      max-height: 100%;
-      border-radius: 8px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+      max-height: calc(100vh - 190px);
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.65);
+      transition: box-shadow 0.25s ease;
+    }
+    @media (max-width: 1023px) {
+      .canvas-wrapper canvas {
+        max-height: 65vh;
+      }
     }
 
     .settings-fab {
@@ -374,6 +418,62 @@
         <textarea id="captionText" rows="4" class="input-field w-full rounded-xl px-4 py-2.5 text-sm resize-none" placeholder="Generá o escribí acá el texto que acompañará tu publicación..."></textarea>
       </div>
 
+      <!-- CANALES DE DESTINO -->
+      <div class="glass-panel rounded-2xl p-5 space-y-3">
+        <div class="flex items-center justify-between">
+          <p class="section-title !mb-0 flex items-center gap-2">
+            <i data-lucide="share-2" class="w-3.5 h-3.5"></i> Canales de Destino
+          </p>
+          <span id="channelCountBadge" class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/30">
+            1 seleccionado
+          </span>
+        </div>
+
+        <div id="channelContainer" class="space-y-2">
+          <!-- Facebook Fanpage (Default checked) -->
+          <label class="channel-chip flex items-center justify-between p-3 rounded-xl border border-white/10 bg-white/[0.02] cursor-pointer">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-[#1877F2] flex items-center justify-center text-white shadow-sm shadow-blue-500/30 flex-shrink-0">
+                <i data-lucide="facebook" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-white leading-tight">Facebook Fanpage</p>
+                <p class="text-[10px] text-surface-400">Página oficial & feed</p>
+              </div>
+            </div>
+            <input type="checkbox" value="facebook" class="channel-checkbox w-4 h-4 rounded text-[#1877F2] bg-surface-900 border-white/20 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#1877F2]" checked />
+          </label>
+
+          <!-- Instagram Feed/Stories -->
+          <label class="channel-chip flex items-center justify-between p-3 rounded-xl border border-white/10 bg-white/[0.02] cursor-pointer">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-[#F58529] via-[#DD2A7B] to-[#8134AF] flex items-center justify-center text-white shadow-sm shadow-pink-500/30 flex-shrink-0">
+                <i data-lucide="instagram" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-white leading-tight">Instagram Feed / Stories</p>
+                <p class="text-[10px] text-surface-400">Posteos y estados temporales</p>
+              </div>
+            </div>
+            <input type="checkbox" value="instagram" class="channel-checkbox w-4 h-4 rounded text-[#DD2A7B] bg-surface-900 border-white/20 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#DD2A7B]" />
+          </label>
+
+          <!-- WhatsApp / Estados -->
+          <label class="channel-chip flex items-center justify-between p-3 rounded-xl border border-white/10 bg-white/[0.02] cursor-pointer">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-[#25D366] to-[#128C7E] flex items-center justify-center text-white shadow-sm shadow-green-500/30 flex-shrink-0">
+                <i data-lucide="message-circle" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <p class="text-xs font-semibold text-white leading-tight">WhatsApp / Estados</p>
+                <p class="text-[10px] text-surface-400">Difusión directa y catálogo</p>
+              </div>
+            </div>
+            <input type="checkbox" value="whatsapp" class="channel-checkbox w-4 h-4 rounded text-[#25D366] bg-surface-900 border-white/20 focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#25D366]" />
+          </label>
+        </div>
+      </div>
+
       <!-- ACTION BUTTONS -->
       <div class="space-y-2 pb-4 lg:pb-0">
         <button id="btnDownload" class="btn-primary w-full rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-sm">
@@ -393,7 +493,12 @@
 
     <!-- RIGHT PANEL: CANVAS PREVIEW -->
     <section class="flex-1 flex flex-col items-center justify-center glass-panel rounded-2xl p-4 md:p-6 min-h-[400px] lg:min-h-0 lg:sticky lg:top-[76px]" style="max-height: calc(100vh - 84px);">
-      <p class="section-title mb-3 flex items-center gap-2"><i data-lucide="monitor" class="w-3.5 h-3.5"></i> Vista Previa del Flyer</p>
+      <div class="w-full flex items-center justify-between mb-3 px-1">
+        <p class="section-title !mb-0 flex items-center gap-2"><i data-lucide="monitor" class="w-3.5 h-3.5"></i> Vista Previa del Flyer</p>
+        <span id="previewResolutionBadge" class="text-[10px] font-mono font-semibold px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-surface-300">
+          1080 × 1080 px (1:1)
+        </span>
+      </div>
       <div class="canvas-wrapper flex-1 w-full flex items-center justify-center overflow-hidden">
         <canvas id="flyerCanvas"></canvas>
       </div>
@@ -475,6 +580,10 @@
     const btnWhatsapp = document.getElementById('btnWhatsapp');
     const btnPublish = document.getElementById('btnPublish');
     
+    const channelContainer = document.getElementById('channelContainer');
+    const channelCountBadge = document.getElementById('channelCountBadge');
+    const previewResolutionBadge = document.getElementById('previewResolutionBadge');
+    
     const settingsFab = document.getElementById('settingsFab');
     const settingsModal = document.getElementById('settingsModal');
     const closeSettings = document.getElementById('closeSettings');
@@ -554,6 +663,7 @@
       badge: 'OFERTA',
       mold: 'mold1',
       format: 'square',      // square | story
+      channels: ['facebook'], // Canales de destino seleccionados
       
       webhookUrl: localStorage.getItem('autoflyer_webhook_url') || '',
       removeBgKey: localStorage.getItem('autoflyer_removebg_key') || ''
@@ -951,8 +1061,35 @@
       formatContainer.querySelectorAll('.format-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       state.format = btn.dataset.format;
+      if (previewResolutionBadge) {
+        previewResolutionBadge.textContent = state.format === 'square' ? '1080 × 1080 px (1:1)' : '1080 × 1920 px (9:16)';
+      }
       renderFlyer();
     });
+
+    // ── Destination Channels Logic ─────────────────────────────────
+    function getSelectedChannels() {
+      return Array.from(document.querySelectorAll('.channel-checkbox:checked')).map(cb => cb.value);
+    }
+
+    function updateChannelsState() {
+      state.channels = getSelectedChannels();
+      if (channelCountBadge) {
+        const count = state.channels.length;
+        channelCountBadge.textContent = `${count} ${count === 1 ? 'seleccionado' : 'seleccionados'}`;
+      }
+      if (state.channels.length === 0) {
+        btnPublish.disabled = true;
+        btnPublish.title = 'Seleccioná al menos un canal para publicar';
+      } else {
+        btnPublish.disabled = false;
+        btnPublish.removeAttribute('title');
+      }
+    }
+
+    if (channelContainer) {
+      channelContainer.addEventListener('change', updateChannelsState);
+    }
 
     // ── Settings Modal ─────────────────────────────────────────────
     settingsFab.addEventListener('click', () => settingsModal.classList.add('open'));
@@ -1023,6 +1160,12 @@
 
     // ── Publish Webhook ────────────────────────────────────────────
     btnPublish.addEventListener('click', async () => {
+      const selectedChannels = getSelectedChannels();
+      if (selectedChannels.length === 0) {
+        showToast('Seleccioná al menos un canal de destino para publicar', 'error');
+        return;
+      }
+
       if (!state.webhookUrl) {
         showToast('Configurá primero la URL del Webhook ⚙️', 'error');
         settingsModal.classList.add('open');
@@ -1048,16 +1191,16 @@
         }
 
         const payload = {
+          channels: selectedChannels,
+          format: state.format,
           image_base64: cleanBase64,
           caption: finalCaption,
           store_name: state.storeName || '',
-          product_name: state.name || 'Producto',
+          product_name: state.name || '',
           presentation: state.presentation || '',
           price: state.price || '',
           badge: state.badge,
-          mold: state.mold,
-          format: state.format,
-          timestamp: new Date().toISOString()
+          mold: state.mold
         };
         
         const res = await fetch(state.webhookUrl, {
@@ -1661,7 +1804,7 @@
       const isSquare = state.format === 'square';
       
       // 1. Background: Warm tinted radial gradient
-      const bgGrad = ctx.createRadialGradient(W / 2, H * 0.42, 60, W / 2, H / 2, W * 0.85);
+      const bgGrad = ctx.createRadialGradient(W / 2, isSquare ? H * 0.42 : H * 0.38, 60, W / 2, H / 2, W * 0.85);
       bgGrad.addColorStop(0, '#FFFFFF');
       bgGrad.addColorStop(0.45, c.bgLight);
       bgGrad.addColorStop(1, c.bgEdge);
@@ -1669,12 +1812,12 @@
       ctx.fillRect(0, 0, W, H);
 
       // Subtle Sunburst Rays radiating from center
-      drawSunburst(W / 2, H * 0.42, W * 0.95, 24, 0.07);
+      drawSunburst(W / 2, isSquare ? H * 0.42 : H * 0.38, W * 0.95, 24, 0.07);
 
       // 2. Top Header Ribbon / Pill
-      const headMargin = isSquare ? 40 : 60;
-      const headY = isSquare ? 36 : 60;
-      const headH = isSquare ? 78 : 95;
+      const headMargin = isSquare ? 40 : 56;
+      const headY = isSquare ? 36 : 175;
+      const headH = isSquare ? 78 : 105;
       const headW = W - headMargin * 2;
 
       ctx.save();
@@ -1698,16 +1841,16 @@
       ctx.fillStyle = '#0F172A';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
-      ctx.fillText(storeText, headMargin + 32, headY + headH / 2);
+      ctx.fillText(storeText, headMargin + (isSquare ? 32 : 40), headY + headH / 2);
 
       // Status Badge (Right side pill)
       const badgeText = (state.badge || 'OFERTA').toUpperCase();
       setFont(isSquare ? 22 : 26, '900', '"Inter", sans-serif');
       const bMetrics = ctx.measureText(badgeText);
       const bPillW = bMetrics.width + (isSquare ? 48 : 56);
-      const bPillH = headH - 16;
+      const bPillH = headH - (isSquare ? 16 : 20);
       const bPillX = headMargin + headW - bPillW - 8;
-      const bPillY = headY + 8;
+      const bPillY = headY + (isSquare ? 8 : 10);
 
       roundRect(bPillX, bPillY, bPillW, bPillH, bPillH / 2);
       const bGrad = ctx.createLinearGradient(bPillX, 0, bPillX + bPillW, 0);
@@ -1726,19 +1869,19 @@
       ctx.restore();
 
       // 3. Product Area with 3D Podium
-      const productBoxY = headY + headH + (isSquare ? 20 : 40);
-      const cardH = isSquare ? 275 : 440;
-      const cardY = H - cardH - (isSquare ? 40 : 60);
+      const productBoxY = headY + headH + (isSquare ? 20 : 36);
+      const cardH = isSquare ? 275 : 460;
+      const cardY = H - cardH - (isSquare ? 40 : 180);
       const productAreaH = cardY - productBoxY;
 
       // 3D Podium at the base of the product
-      const podiumY = cardY - (isSquare ? 40 : 70);
+      const podiumY = cardY - (isSquare ? 40 : 55);
       const podiumRx = isSquare ? 380 : 440;
       const podiumRy = isSquare ? 65 : 85;
       draw3DPodium(W / 2, podiumY, podiumRx, podiumRy);
 
       // Product Image
-      const imgPadX = isSquare ? 80 : 100;
+      const imgPadX = isSquare ? 80 : 70;
       const imgW = W - imgPadX * 2;
       const imgH = productAreaH + 20;
       renderProductImage(imgPadX, productBoxY - 10, imgW, imgH, 0, false);
@@ -1765,8 +1908,8 @@
       // Inner Product Texts (Left side of card)
       const textX = cardMargin + (isSquare ? 40 : 50);
       const stickerRadius = isSquare ? 140 : 180;
-      const textMaxW = cardW - stickerRadius * 2 - (isSquare ? 30 : 50);
-      let curTextY = cardY + (isSquare ? 42 : 65);
+      const textMaxW = cardW - stickerRadius * 2 - (isSquare ? 30 : 40);
+      let curTextY = cardY + (isSquare ? 42 : 55);
 
       // Top mini guarantee badge
       setFont(isSquare ? 16 : 20, '800', '"Inter", sans-serif');
@@ -1774,7 +1917,7 @@
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
       ctx.fillText('★ GARANTÍA DE SÚPER PRECIO', textX, curTextY);
-      curTextY += isSquare ? 28 : 36;
+      curTextY += isSquare ? 28 : 40;
 
       // Product Name (Max 2 lines, uppercase, heavy black)
       setFont(isSquare ? 38 : 48, '900', '"Inter", "Outfit", sans-serif');
@@ -1793,7 +1936,7 @@
 
       // 5. Giant Floating Retail Price Sticker (Bottom Right)
       const stickerCx = cardMargin + cardW - stickerRadius - (isSquare ? 15 : 20);
-      const stickerCy = cardY + cardH / 2 + (isSquare ? 5 : 10);
+      const stickerCy = cardY + cardH / 2 + (isSquare ? 5 : 8);
       drawGiantPriceSticker(stickerCx, stickerCy, stickerRadius, state.price, state.presentation, {
         borderColor: '#DC2626',
         angle: -0.07,
@@ -1812,8 +1955,10 @@
       ctx.fillRect(0, 0, W, H);
 
       // Subtle modern grid / frame
-      const framePad = isSquare ? 32 : 44;
-      roundRect(framePad, framePad, W - framePad * 2, H - framePad * 2, 28);
+      const framePad = isSquare ? 32 : 48;
+      const frameY = isSquare ? framePad : 150;
+      const frameH = isSquare ? (H - framePad * 2) : (H - frameY - 170);
+      roundRect(framePad, frameY, W - framePad * 2, frameH, 28);
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
       ctx.lineWidth = 2;
       ctx.stroke();
@@ -1823,12 +1968,12 @@
       ctx.lineWidth = 3;
       const ch = 20;
       // Top left
-      ctx.beginPath(); ctx.moveTo(framePad, framePad + ch); ctx.lineTo(framePad, framePad); ctx.lineTo(framePad + ch, framePad); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(framePad, frameY + ch); ctx.lineTo(framePad, frameY); ctx.lineTo(framePad + ch, frameY); ctx.stroke();
       // Top right
-      ctx.beginPath(); ctx.moveTo(W - framePad - ch, framePad); ctx.lineTo(W - framePad, framePad); ctx.lineTo(W - framePad, framePad + ch); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(W - framePad - ch, frameY); ctx.lineTo(W - framePad, frameY); ctx.lineTo(W - framePad, frameY + ch); ctx.stroke();
 
       // 2. Header Bar
-      const headY = framePad + 28;
+      const headY = frameY + (isSquare ? 28 : 34);
       setFont(isSquare ? 24 : 30, '800', '"Outfit", sans-serif');
       ctx.fillStyle = '#94A3B8';
       ctx.textAlign = 'left';
@@ -1851,21 +1996,21 @@
       ctx.textBaseline = 'middle';
       ctx.fillText(bText, bpX + bpW / 2, headY - 4 + bpH / 2);
 
-      // 3. Central Showcase with Circular White Halo (60% upper zone)
-      const bottomH = isSquare ? 280 : 420;
-      const bottomY = H - framePad - bottomH;
-      const productH = bottomY - headY - 40;
-      const productCy = headY + 50 + productH / 2;
+      // 3. Central Showcase with Circular White Halo
+      const bottomH = isSquare ? 280 : 460;
+      const bottomY = isSquare ? (H - framePad - bottomH) : (H - 180 - bottomH);
+      const productH = bottomY - headY - (isSquare ? 40 : 50);
+      const productCy = headY + (isSquare ? 50 : 40) + productH / 2;
 
       // Circular White Halo Glow behind product
-      const haloRadius = isSquare ? 320 : 420;
+      const haloRadius = isSquare ? 320 : 450;
       drawHaloGlow(W / 2, productCy, haloRadius, 'rgba(255, 255, 255, 0.22)');
 
       // Product Image
       renderProductImage(framePad + 40, headY + 40, W - (framePad + 40) * 2, productH, 0, true);
 
       // 4. Solid Themed Bottom Block
-      roundRect(framePad, bottomY, W - framePad * 2, bottomH, 24);
+      roundRect(framePad, bottomY, W - framePad * 2, bottomH, 28);
       const blockGrad = ctx.createLinearGradient(framePad, bottomY, framePad + (W - framePad * 2), bottomY + bottomH);
       blockGrad.addColorStop(0, c.primaryDark);
       blockGrad.addColorStop(1, c.primary);
@@ -1873,10 +2018,10 @@
       ctx.fill();
 
       // Left Column: Texts
-      const textX = framePad + (isSquare ? 40 : 50);
+      const textX = framePad + (isSquare ? 40 : 45);
       const capW = isSquare ? 320 : 380;
-      const textW = W - framePad * 2 - capW - (isSquare ? 80 : 90);
-      let textY = bottomY + (isSquare ? 45 : 70);
+      const textW = W - framePad * 2 - capW - (isSquare ? 80 : 70);
+      let textY = bottomY + (isSquare ? 45 : 65);
 
       // Category / store tag
       setFont(isSquare ? 16 : 20, '700', '"Inter", sans-serif');
@@ -1884,12 +2029,12 @@
       ctx.textAlign = 'left';
       ctx.textBaseline = 'top';
       ctx.fillText('DISPONIBILIDAD INMEDIATA', textX, textY);
-      textY += isSquare ? 30 : 40;
+      textY += isSquare ? 30 : 42;
 
       // Product Name in pure white bold
-      setFont(isSquare ? 38 : 46, '900', '"Outfit", sans-serif');
+      setFont(isSquare ? 38 : 48, '900', '"Outfit", sans-serif');
       ctx.fillStyle = '#FFFFFF';
-      textY = wrapTextStrict(state.name || 'Nombre del Producto', textX, textY, textW, isSquare ? 44 : 54, 2, 'left');
+      textY = wrapTextStrict(state.name || 'Nombre del Producto', textX, textY, textW, isSquare ? 44 : 56, 2, 'left');
 
       // Presentation
       if (state.presentation) {
@@ -1900,8 +2045,8 @@
       }
 
       // Right Column: Floating Retail Capsule Price
-      const capH = isSquare ? 170 : 210;
-      const capX = W - framePad - capW - (isSquare ? 30 : 40);
+      const capH = isSquare ? 170 : 220;
+      const capX = W - framePad - capW - (isSquare ? 30 : 35);
       const capY = bottomY + (bottomH - capH) / 2;
       drawPriceCapsule(capX, capY, capW, capH, state.price, state.presentation, c.primary);
     }
@@ -1930,16 +2075,19 @@
 
       // Dynamic Frame with Chamfered Corners
       const m = isSquare ? 36 : 48;
+      const frameY = isSquare ? m : 150;
+      const frameH = isSquare ? (H - m * 2) : (H - frameY - 170);
       ctx.save();
       ctx.strokeStyle = '#FACC15';
       ctx.lineWidth = 6;
-      ctx.strokeRect(m, m, W - m * 2, H - m * 2);
+      ctx.strokeRect(m, frameY, W - m * 2, frameH);
       ctx.restore();
 
       // 2. Top Header Ribbon (Poster Discount Style)
-      const topH = isSquare ? 80 : 100;
+      const topH = isSquare ? 80 : 110;
+      const topY = isSquare ? (m + topH / 2 + 10) : (175 + topH / 2);
       ctx.save();
-      ctx.translate(W / 2, m + topH / 2 + 10);
+      ctx.translate(W / 2, topY);
       ctx.rotate(-0.03);
 
       // Angled black banner
@@ -1952,7 +2100,7 @@
       ctx.fill();
 
       ctx.shadowColor = 'transparent';
-      setFont(isSquare ? 28 : 34, '900 italic', '"Outfit", "Impact", sans-serif');
+      setFont(isSquare ? 28 : 36, '900 italic', '"Outfit", "Impact", sans-serif');
       ctx.fillStyle = '#FACC15';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -1965,10 +2113,10 @@
       ctx.restore();
 
       // 3. Giant Central White Spotlight Circle for Product with Circular Mask
-      const ribbonH = isSquare ? 180 : 240;
-      const ribbonY = H - ribbonH - (isSquare ? 70 : 110);
+      const ribbonH = isSquare ? 180 : 250;
+      const ribbonY = isSquare ? (H - ribbonH - 70) : (H - ribbonH - 180);
       const centerX = W / 2;
-      const circleCy = isSquare ? 460 : 700;
+      const circleCy = isSquare ? 460 : 790;
       const centerY = circleCy;
       const circleRadius = isSquare ? 275 : 380;
 
@@ -2050,7 +2198,7 @@
       ctx.restore();
 
       // 4. Slanted Headline / Product Name
-      const nameY = circleCy + circleRadius + (isSquare ? 25 : 40);
+      const nameY = circleCy + circleRadius + (isSquare ? 25 : 36);
       ctx.save();
       setFont(isSquare ? 44 : 54, '900 italic', '"Outfit", sans-serif');
       ctx.fillStyle = '#FFFFFF';
@@ -2087,6 +2235,7 @@
     }
 
     // ── Init ──────────────────────────────────────────────────────
+    updateChannelsState();
     lucide.createIcons();
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(() => renderFlyer());
