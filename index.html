@@ -267,9 +267,18 @@
       border-color: #2f79fc !important;
       background: rgba(47, 121, 252, 0.12) !important;
     }
+
+    /* Mobile Tabs Navigation */
+    @media (max-width: 1023px) {
+      body[data-mobile-tab="editor"] #editorPanel { display: block !important; }
+      body[data-mobile-tab="editor"] #previewPanel { display: none !important; }
+
+      body[data-mobile-tab="preview"] #editorPanel { display: none !important; }
+      body[data-mobile-tab="preview"] #previewPanel { display: flex !important; }
+    }
   </style>
 </head>
-<body class="min-h-screen">
+<body class="min-h-screen" data-mobile-tab="editor">
 
   <!-- HEADER -->
   <header class="glass-panel sticky top-0 z-40 px-4 md:px-6 py-3 flex items-center justify-between">
@@ -284,29 +293,65 @@
     </div>
   </header>
 
+  <!-- MOBILE TABS BAR (Visible only on screens < lg) -->
+  <nav aria-label="Navegación móvil" class="lg:hidden sticky top-[57px] z-30 px-4 py-2 bg-[#0f1117]/90 backdrop-blur-xl border-b border-white/5">
+    <div class="max-w-md mx-auto glass-panel rounded-2xl p-1 flex gap-1 border border-white/10 shadow-lg">
+      <button id="tabEditor" type="button" class="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 bg-brand-600 text-white shadow-md shadow-brand-500/25 cursor-pointer">
+        <i data-lucide="edit-3" class="w-3.5 h-3.5"></i>
+        <span>✏️ Editor</span>
+      </button>
+      <button id="tabPreview" type="button" class="flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 text-surface-400 hover:text-white cursor-pointer">
+        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+        <span>👁️ Vista Previa</span>
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+      </button>
+    </div>
+  </nav>
+
   <!-- MAIN LAYOUT -->
   <main class="flex flex-col lg:flex-row gap-4 p-4 md:p-6 max-w-[1600px] mx-auto" style="min-height: calc(100vh - 60px);">
 
     <!-- LEFT PANEL: CONTROLS -->
-    <aside class="w-full lg:w-[420px] xl:w-[440px] flex-shrink-0 space-y-4 lg:max-h-[calc(100vh-84px)] lg:overflow-y-auto lg:pr-2">
+    <aside id="editorPanel" class="w-full lg:w-[420px] xl:w-[440px] flex-shrink-0 space-y-4 lg:max-h-[calc(100vh-84px)] lg:overflow-y-auto lg:pr-2">
 
       <!-- IMAGE UPLOAD & PROCESSING -->
       <div class="glass-panel rounded-2xl p-5">
         <p class="section-title flex items-center gap-2"><i data-lucide="image" class="w-3.5 h-3.5"></i> Imagen del Producto</p>
-        <div id="uploadZone" class="upload-zone rounded-xl p-6 flex flex-col items-center justify-center text-center min-h-[160px] relative">
-          <input type="file" id="imageInput" accept="image/*" capture="environment" class="absolute inset-0 opacity-0 cursor-pointer z-10" />
-          <div id="uploadPlaceholder" class="flex flex-col items-center gap-2">
-            <div class="w-12 h-12 rounded-full bg-surface-950/60 flex items-center justify-center mb-1">
-              <i data-lucide="camera" class="w-6 h-6 text-surface-400"></i>
+        <div id="uploadZone" class="upload-zone rounded-xl p-5 flex flex-col items-center justify-center text-center min-h-[160px] relative transition-all">
+          <!-- INPUT FILE OPTIMIZADO PARA MÓVIL: SIN capture PARA PERMITIR ACCESO A GALERÍA / ARCHIVOS / CÁMARA -->
+          <input 
+            type="file" 
+            id="imageInput" 
+            accept="image/*,image/jpeg,image/png,image/webp" 
+            class="sr-only" 
+          />
+          
+          <!-- CONTENEDOR TÁCTIL (LABEL VINCULADO AL INPUT FILE) -->
+          <label for="imageInput" id="uploadPlaceholder" class="flex flex-col items-center gap-2 cursor-pointer w-full py-2 select-none touch-manipulation">
+            <div class="w-12 h-12 rounded-full bg-surface-950/60 border border-white/10 flex items-center justify-center mb-0.5 shadow-sm">
+              <i data-lucide="image" class="w-6 h-6 text-brand-400"></i>
             </div>
-            <p class="text-sm text-surface-400">Arrastrá o tocá para subir la foto</p>
-            <p class="text-xs text-surface-600">JPG, PNG — máx. 10 MB</p>
-          </div>
-          <div id="uploadPreview" class="hidden w-full relative z-20">
-            <img id="previewImg" src="" alt="Preview" class="w-full max-h-[200px] object-contain rounded-lg" />
-            <button id="removeImage" class="mt-2 text-xs text-red-400 hover:text-red-300 flex items-center gap-1 mx-auto cursor-pointer">
-              <i data-lucide="trash-2" class="w-3 h-3"></i> Quitar imagen
-            </button>
+            <div>
+              <p class="text-sm font-medium text-surface-200">Arrastrá o tocá para subir la foto</p>
+              <p class="text-xs text-surface-500 mt-0.5">Elegí de la galería o sacá una foto</p>
+            </div>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-brand-300 mt-1 pointer-events-none">
+              <i data-lucide="upload" class="w-3.5 h-3.5 text-brand-400"></i> Cargar imagen
+            </span>
+            <p class="text-[11px] text-surface-600">JPG, PNG, WebP — máx. 10 MB</p>
+          </label>
+
+          <!-- VISTA PREVIA CON OPCIONES DE CAMBIAR O QUITAR -->
+          <div id="uploadPreview" class="hidden w-full relative z-20 flex flex-col items-center">
+            <img id="previewImg" src="" alt="Preview" class="w-full max-h-[220px] object-contain rounded-lg border border-white/10 bg-black/20" />
+            <div class="mt-3 flex items-center justify-center gap-2 w-full">
+              <label for="imageInput" class="flex-1 max-w-[140px] py-1.5 px-3 rounded-lg bg-brand-500/15 hover:bg-brand-500/25 border border-brand-500/30 text-brand-300 text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition-all">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Cambiar foto
+              </label>
+              <button type="button" id="removeImage" class="flex-1 max-w-[120px] py-1.5 px-3 rounded-lg bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-red-300 text-xs font-medium flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition-all">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Quitar imagen
+              </button>
+            </div>
           </div>
         </div>
         
@@ -504,14 +549,20 @@
 
       <!-- ACTION BUTTONS -->
       <div class="space-y-2 pb-4 lg:pb-0">
-        <button id="btnDownload" class="btn-primary w-full rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-sm">
+        <!-- Mobile Switch to Preview Quick Button -->
+        <button id="btnJumpToPreviewMobile" type="button" class="lg:hidden w-full py-2.5 px-4 rounded-xl border border-brand-500/30 bg-brand-500/10 text-brand-300 font-semibold text-xs flex items-center justify-center gap-2 hover:bg-brand-500/20 transition-colors cursor-pointer mb-1">
+          <i data-lucide="eye" class="w-3.5 h-3.5"></i>
+          <span>Ver Vista Previa del Flyer</span>
+        </button>
+
+        <button id="btnDownload" class="btn-primary w-full rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-sm cursor-pointer">
           <i data-lucide="download" class="w-4 h-4"></i> Descargar Flyer (HD)
         </button>
         <div class="grid grid-cols-2 gap-2">
-          <button id="btnWhatsapp" class="btn-whatsapp rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-sm">
+          <button id="btnWhatsapp" class="btn-whatsapp rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-sm cursor-pointer">
             <i data-lucide="message-circle" class="w-4 h-4"></i> WhatsApp
           </button>
-          <button id="btnPublish" class="btn-publish rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-sm">
+          <button id="btnPublish" class="btn-publish rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-sm cursor-pointer">
             <i data-lucide="send" class="w-4 h-4"></i> Publicar Webhook
           </button>
         </div>
@@ -520,7 +571,7 @@
     </aside>
 
     <!-- RIGHT PANEL: CANVAS PREVIEW -->
-    <section class="flex-1 flex flex-col items-center justify-center glass-panel rounded-2xl p-4 md:p-6 min-h-[400px] lg:min-h-0 lg:sticky lg:top-[76px]" style="max-height: calc(100vh - 84px);">
+    <section id="previewPanel" class="flex-1 flex flex-col items-center justify-center glass-panel rounded-2xl p-4 md:p-6 min-h-[400px] lg:min-h-0 lg:sticky lg:top-[76px] lg:max-h-[calc(100vh-84px)]">
       <div class="w-full flex items-center justify-between mb-3 px-1">
         <p class="section-title !mb-0 flex items-center gap-2"><i data-lucide="monitor" class="w-3.5 h-3.5"></i> Vista Previa del Flyer</p>
         <span id="previewResolutionBadge" class="text-[10px] font-mono font-semibold px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-surface-300">
@@ -531,6 +582,23 @@
         <canvas id="flyerCanvas"></canvas>
       </div>
       <p class="text-[10px] text-surface-600 mt-3 text-center">Render en tiempo real. La descarga es en HD sin compresión.</p>
+
+      <!-- MOBILE QUICK ACTIONS (Visible only on mobile preview) -->
+      <div class="lg:hidden w-full mt-4 pt-4 border-t border-white/10 space-y-2">
+        <button id="btnDownloadMobile" type="button" class="btn-primary w-full rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-sm font-semibold cursor-pointer">
+          <i data-lucide="download" class="w-4 h-4"></i> Descargar Flyer (HD)
+        </button>
+        <div class="grid grid-cols-2 gap-2">
+          <button id="btnWhatsappMobile" type="button" class="btn-whatsapp rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-sm font-semibold cursor-pointer">
+            <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.711 2.598 2.664-.698c.966.526 1.83.81 2.8.81h.005c3.177 0 5.764-2.587 5.766-5.766 0-1.54-.6-2.988-1.688-4.077-1.09-1.089-2.538-1.689-4.087-1.691zm7.123 11.206c-1.157 1.157-2.696 1.794-4.336 1.795h-.006c-1.086 0-2.148-.285-3.08-.827l-4.372 1.146 1.167-4.261c-.596-.991-.91-2.128-.909-3.292.002-3.497 2.849-6.344 6.347-6.345 1.694.001 3.286.662 4.485 1.862 1.199 1.2 1.859 2.793 1.858 4.489-.001 1.696-.662 3.289-1.854 4.483zm-1.884-2.909c-.198-.099-1.171-.578-1.353-.644-.182-.065-.315-.099-.447.099s-.512.644-.627.776c-.116.132-.231.149-.429.05-.198-.099-.838-.309-1.597-.986-.591-.528-.989-1.18-1.105-1.378-.116-.198-.012-.306.087-.404.089-.089.198-.231.297-.347.099-.115.132-.198.198-.33.066-.132.033-.248-.017-.347-.049-.099-.446-1.073-.611-1.47-.161-.387-.325-.334-.447-.34l-.382-.006c-.132 0-.346.049-.527.248-.182.198-.693.677-.693 1.652s.709 1.916.808 2.048c.099.132 1.396 2.131 3.382 2.987.472.204.841.325 1.129.416.475.151.907.129 1.248.078.38-.057 1.171-.479 1.336-.941.165-.462.165-.858.116-.941-.05-.083-.182-.132-.38-.231z"/></svg>
+            <span>WhatsApp</span>
+          </button>
+          <button id="btnPublishMobile" type="button" class="btn-publish rounded-xl px-4 py-3 flex items-center justify-center gap-2 text-sm font-semibold cursor-pointer">
+            <i data-lucide="send" class="w-4 h-4"></i>
+            <span>Publicar</span>
+          </button>
+        </div>
+      </div>
     </section>
 
   </main>
@@ -611,6 +679,13 @@
     const channelContainer = document.getElementById('channelContainer');
     const channelCountBadge = document.getElementById('channelCountBadge');
     const previewResolutionBadge = document.getElementById('previewResolutionBadge');
+    
+    const tabEditor = document.getElementById('tabEditor');
+    const tabPreview = document.getElementById('tabPreview');
+    const btnJumpToPreviewMobile = document.getElementById('btnJumpToPreviewMobile');
+    const btnDownloadMobile = document.getElementById('btnDownloadMobile');
+    const btnWhatsappMobile = document.getElementById('btnWhatsappMobile');
+    const btnPublishMobile = document.getElementById('btnPublishMobile');
     
     const settingsFab = document.getElementById('settingsFab');
     const settingsModal = document.getElementById('settingsModal');
@@ -743,6 +818,18 @@
 
     // ── Image Upload & Background Processing ───────────────────────
     imageInput.addEventListener('change', handleImageSelect);
+
+    // Permite re-seleccionar la misma imagen si el usuario la vuelve a tocar
+    imageInput.addEventListener('click', () => {
+      imageInput.value = '';
+    });
+
+    // Clic de respaldo en la zona para garantizar apertura táctil inmediata en cualquier parte del dropzone
+    uploadZone.addEventListener('click', e => {
+      if (e.target.closest('#uploadPreview') || e.target.closest('label[for="imageInput"]')) return;
+      imageInput.click();
+    });
+
     uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
     uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
     uploadZone.addEventListener('drop', e => {
@@ -773,7 +860,8 @@
           uploadPlaceholder.classList.add('hidden');
           uploadPreview.classList.remove('hidden');
           uploadZone.classList.add('has-image');
-          processBackground(); // auto process if toggle is on
+          if (window.lucide) lucide.createIcons();
+          processBackground(); // auto process if toggle is on (or renderFlyer immediately)
         };
         img.src = state.imageSrc;
       };
@@ -956,6 +1044,7 @@
     }
 
     removeImageBtn.addEventListener('click', e => {
+      e.preventDefault();
       e.stopPropagation();
       state.image = null;
       state.imageSrc = null;
@@ -967,6 +1056,7 @@
       uploadZone.classList.remove('has-image');
       hideBgLoader();
       renderFlyer();
+      if (window.lucide) lucide.createIcons();
     });
 
     removeBgToggle.addEventListener('change', () => {
@@ -1106,18 +1196,53 @@
         const count = state.channels.length;
         channelCountBadge.textContent = `${count} ${count === 1 ? 'seleccionado' : 'seleccionados'}`;
       }
-      if (state.channels.length === 0) {
-        btnPublish.disabled = true;
+      const isDisabled = state.channels.length === 0;
+      btnPublish.disabled = isDisabled;
+      if (btnPublishMobile) btnPublishMobile.disabled = isDisabled;
+
+      if (isDisabled) {
         btnPublish.title = 'Seleccioná al menos un canal para publicar';
+        if (btnPublishMobile) btnPublishMobile.title = 'Seleccioná al menos un canal para publicar';
       } else {
-        btnPublish.disabled = false;
         btnPublish.removeAttribute('title');
+        if (btnPublishMobile) btnPublishMobile.removeAttribute('title');
       }
     }
 
     if (channelContainer) {
       channelContainer.addEventListener('change', updateChannelsState);
     }
+
+    // ── Mobile Tabs Switching ──────────────────────────────────────
+    function switchMobileTab(targetTab) {
+      document.body.setAttribute('data-mobile-tab', targetTab);
+      if (targetTab === 'editor') {
+        if (tabEditor) {
+          tabEditor.className = 'flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 bg-brand-600 text-white shadow-md shadow-brand-500/25 cursor-pointer';
+        }
+        if (tabPreview) {
+          tabPreview.className = 'flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 text-surface-400 hover:text-white cursor-pointer';
+        }
+      } else {
+        if (tabPreview) {
+          tabPreview.className = 'flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 bg-brand-600 text-white shadow-md shadow-brand-500/25 cursor-pointer';
+        }
+        if (tabEditor) {
+          tabEditor.className = 'flex-1 py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 text-surface-400 hover:text-white cursor-pointer';
+        }
+        // Force crisp canvas redraw when opening preview tab
+        renderFlyer();
+      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    if (tabEditor) tabEditor.addEventListener('click', () => switchMobileTab('editor'));
+    if (tabPreview) tabPreview.addEventListener('click', () => switchMobileTab('preview'));
+    if (btnJumpToPreviewMobile) btnJumpToPreviewMobile.addEventListener('click', () => switchMobileTab('preview'));
+
+    if (btnDownloadMobile) btnDownloadMobile.addEventListener('click', () => btnDownload.click());
+    if (btnWhatsappMobile) btnWhatsappMobile.addEventListener('click', () => btnWhatsapp.click());
+    if (btnPublishMobile) btnPublishMobile.addEventListener('click', () => btnPublish.click());
 
     // ── Settings Modal ─────────────────────────────────────────────
     settingsFab.addEventListener('click', () => settingsModal.classList.add('open'));
