@@ -1976,17 +1976,21 @@
 
         const imgbbResult = await imgbbResponse.json();
 
-        // Extracción de la URL pública directa
-        imageUrl = imgbbResult.data?.url || imgbbResult.data?.display_url;
+        // Extracción estricta del enlace directo al archivo de imagen (.png/.jpg)
+        // ImgBB devuelve en data.display_url y data.image.url el link directo al CDN (https://i.ibb.co/...).
+        // (Nota: data.url apunta a la página web del visor https://ibb.co/... que Instagram rechaza con error 9004).
+        const imgData = imgbbResult.data || {};
+        imageUrl = imgData.display_url || imgData.image?.url || imgData.url;
+
         if (!imageUrl) {
-          const msg = 'ImgBB respondió status 200 pero no incluyó una URL pública válida (url / display_url).';
+          const msg = 'ImgBB respondió status 200 pero no incluyó una URL pública válida en data.display_url / data.image.url.';
           console.error('❌', msg, imgbbResult);
           alert(msg);
           return; // Detiene la ejecución
         }
 
-        // Log 2: Al obtener la URL pública con éxito
-        console.log('✅ [2/3] URL pública obtenida con éxito de ImgBB:', imageUrl);
+        // Log 2: Al obtener la URL pública directa con éxito
+        console.log('✅ [2/3] Enlace directo de imagen obtenido con éxito de ImgBB (display_url):', imageUrl);
 
       } catch (err) {
         const msg = `Error de red o conexión al intentar subir a ImgBB: ${err.message}`;
