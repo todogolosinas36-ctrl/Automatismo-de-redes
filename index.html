@@ -1896,22 +1896,20 @@
 
       // 2. Validación Previa: Alerta impidiendo el envío si no hay canales marcados
       if (!channels || channels.length === 0) {
-        showToast('⚠️ Debes seleccionar al menos un canal de destino antes de publicar.', 'error');
+        alert('⚠️ Debes seleccionar al menos un canal de destino antes de publicar.');
         return;
       }
 
       if (!state.webhookUrl) {
-        showToast('Configurá primero la URL del Webhook en Ajustes ⚙️', 'error');
+        alert('⚠️ Configurá primero la URL del Webhook de Make en Ajustes ⚙️');
         settingsModal.classList.add('open');
         return;
       }
 
-      const imgbbKey = state.imgbbKey && state.imgbbKey !== DEFAULT_IMGBB_API_KEY ? state.imgbbKey : DEFAULT_IMGBB_API_KEY;
-      if (!imgbbKey || imgbbKey === 'TU_API_KEY') {
-        showToast('⚠️ Configurá tu API Key de ImgBB en Ajustes ⚙️ para alojar la imagen', 'error');
-        settingsModal.classList.add('open');
-        return;
-      }
+      // Clave de API de ImgBB (preferencia guardada o constante)
+      const imgbbKey = (state.imgbbKey && state.imgbbKey !== DEFAULT_IMGBB_API_KEY)
+        ? state.imgbbKey
+        : 'TU_API_KEY';
 
       // Obtener o generar caption publicitario
       let finalCaption = captionText.value.trim();
@@ -1925,70 +1923,124 @@
         });
       }
 
-      // Si WhatsApp está seleccionado, abrir la API de WhatsApp
+      // Si WhatsApp está seleccionado, abrir la API de WhatsApp sin bloquear popup
       if (channels.includes('whatsapp')) {
         openWhatsAppUrl(finalCaption);
       }
 
+      // ─────────────────────────────────────────────────────────────
+      // PASO 1 & 2: Limpieza de Base64 y Subida a ImgBB
+      // ─────────────────────────────────────────────────────────────
+      const rawDataUrl = canvas.toDataURL('image/png');
+      
+      // Limpieza robusta: divide por la coma para garantizar eliminar cualquier prefijo data:image/...;base64,
+      let cleanBase64 = '';
+      if (rawDataUrl.indexOf(',') !== -1) {
+        cleanBase64 = rawDataUrl.split(',')[1].trim();
+      } else {
+        cleanBase64 = rawDataUrl.replace(/^data:image\/[a-z]+;base64,/, '').trim();
+      }
+
+      const formData = new FormData();
+      formData.append('image', cleanBase64);
+
+      let imageUrl = null;
+
+      // Log 1: Antes de iniciar la subida a ImgBB
+      console.log('🚀 [1/3] Iniciando subida de imagen a ImgBB...', {
+        key: imgbbKey ? `${imgbbKey.substring(0, 4)}***` : 'VACÍA',
+        base64Length: cleanBase64.length
+      });
+      showToast('Alojando flyer en ImgBB...', 'info');
+
       try {
-        // 1. Limpieza del Base64: Obtener imagen del Canvas y eliminar prefijo data:image/...;base64,
-        showToast('Procesando imagen del flyer...', 'info');
-        const rawDataUrl = canvas.toDataURL('image/png');
-        const cleanBase64 = rawDataUrl.replace(/^data:image\/\w+;base64,/, '');
-
-        // 2. Subida a ImgBB mediante fetch y FormData
-        showToast('Alojando imagen en ImgBB...', 'info');
-        const formData = new FormData();
-        formData.append('image', cleanBase64);
-
         const imgbbResponse = await fetch(`https://api.imgbb.com/1/upload?key=${encodeURIComponent(imgbbKey)}`, {
           method: 'POST',
           body: formData
         });
 
-        if (!imgbbResponse.ok) {
-          const errDetail = await imgbbResponse.text();
-          throw new Error(`Error en ImgBB (${imgbbResponse.status}): ${errDetail}`);
+        // Verificación estricta de status 200
+        if (imgbbResponse.status !== 200) {
+          let errorDetail = '';
+          try {
+            const errJson = await imgbbResponse.json();
+            errorDetail = errJson.error?.message || JSON.stringify(errJson);
+          } catch (_) {
+            errorDetail = await imgbbResponse.text();
+          }
+          const msg = `Fallo en ImgBB (Status ${imgbbResponse.status}): ${errorDetail}`;
+          console.error('❌', msg);
+          alert(msg);
+          return; // Detiene la ejecución
         }
 
         const imgbbResult = await imgbbResponse.json();
 
-        // 3. Captura de la URL pública directa (url o display_url)
-        const imageUrl = imgbbResult.data?.url || imgbbResult.data?.display_url;
+        // Extracción de la URL pública directa
+        imageUrl = imgbbResult.data?.url || imgbbResult.data?.display_url;
         if (!imageUrl) {
-          throw new Error('ImgBB no devolvió una URL pública válida');
+          const msg = 'ImgBB respondió status 200 pero no incluyó una URL pública válida (url / display_url).';
+          console.error('❌', msg, imgbbResult);
+          alert(msg);
+          return; // Detiene la ejecución
         }
 
-        // 4. Actualización del Payload hacia Make: incluye image_base64 e image_url
-        showToast('Enviando payload al Webhook de Make...', 'info');
-        const payload = {
-          channels: channels,
-          image_base64: cleanBase64,
-          image_url: imageUrl,
-          caption: finalCaption,
-          product_name: state.name || '',
-          price: state.price || '',
-          presentation: state.presentation || '',
-          badge: state.badge || 'OFERTA',
-          store_name: state.storeName || '',
-          format: state.format,
-          mold: state.mold
-        };
+        // Log 2: Al obtener la URL pública con éxito
+        console.log('✅ [2/3] URL pública obtenida con éxito de ImgBB:', imageUrl);
 
-        // 5. Envío final a Make mediante fetch POST
+      } catch (err) {
+        const msg = `Error de red o conexión al intentar subir a ImgBB: ${err.message}`;
+        console.error('❌', msg, err);
+        alert(msg);
+        return; // Detiene la ejecución
+      }
+
+      // ─────────────────────────────────────────────────────────────
+      // PASO 3: Construcción del Payload y Envío a Make
+      // ─────────────────────────────────────────────────────────────
+      const payload = {
+        channels: channels,
+        image_base64: cleanBase64,
+        image_url: imageUrl,
+        caption: finalCaption,
+        product_name: state.name || '',
+        price: state.price || '',
+        presentation: state.presentation || '',
+        badge: state.badge || 'OFERTA',
+        store_name: state.storeName || '',
+        format: state.format,
+        mold: state.mold
+      };
+
+      // Log 3: Justo antes de hacer el fetch a Make
+      console.log('📤 [3/3] Enviando payload final al Webhook de Make...', {
+        webhookUrl: state.webhookUrl,
+        payload: payload
+      });
+      showToast('Enviando payload al Webhook de Make...', 'info');
+
+      try {
         const res = await fetch(state.webhookUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
 
-        if (res.ok) {
-          showToast('¡Flyer publicado exitosamente! 🎉', 'success');
-        } else {
-          showToast(`Error del servidor Make: ${res.status}`, 'error');
+        if (res.status !== 200 && !res.ok) {
+          const msg = `El Webhook de Make respondió con error (Status ${res.status}): ${res.statusText}`;
+          console.error('❌', msg);
+          alert(msg);
+          return;
         }
+
+        console.log('🎉 Publicación en Make completada con éxito!');
+        showToast('¡Flyer publicado exitosamente! 🎉', 'success');
+
       } catch (err) {
-        showToast('Error al publicar: ' + err.message, 'error');
+        const msg = `Error de conexión al enviar hacia el Webhook de Make: ${err.message}`;
+        console.error('❌', msg, err);
+        alert(msg);
+        return;
       }
     });
 
