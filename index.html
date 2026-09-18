@@ -9,7 +9,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Bebas+Neue&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Bebas+Neue&family=Outfit:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;0,900;1,400;1,700&display=swap" rel="stylesheet" />
   <script>
     tailwind.config = {
       theme: {
@@ -268,6 +268,360 @@
       background: rgba(47, 121, 252, 0.12) !important;
     }
 
+    /* ══════════════════════════════════════════════════════════════
+       MOLD TABS & PREMIUM CONTAINERS (AutoFlyer Pro)
+       ══════════════════════════════════════════════════════════════ */
+    .mold-tabs-nav {
+      display: flex;
+      background: rgba(15, 17, 23, 0.85);
+      padding: 4px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      gap: 4px;
+    }
+    .mold-tab-btn {
+      flex: 1;
+      padding: 8px 6px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #8b92a9;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+    .mold-tab-btn:hover {
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .mold-tab-btn.active {
+      color: #ffffff;
+      background: #2f79fc;
+      box-shadow: 0 2px 8px rgba(47, 121, 252, 0.35);
+    }
+
+    /* Mold Tab Panels & Safe Render Protection */
+    .mold-tab-panel {
+      display: none;
+    }
+    .mold-tab-panel.active {
+      display: block;
+      animation: fadeInTab 0.2s ease-out;
+    }
+    @keyframes fadeInTab {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Protección técnica para renderizadores Canvas / html2canvas / dom-to-image:
+       Si una librería necesita medir o capturar un elemento inactivo, esta clase previene el colapso a 0x0 px */
+    .mold-tab-panel.rendering-capture,
+    .premium-mold-card.rendering-capture {
+      display: block !important;
+      position: fixed !important;
+      left: -9999px !important;
+      top: 0 !important;
+      visibility: visible !important;
+      z-index: -999 !important;
+    }
+
+    /* Mold Cards Generic Styling */
+    .mold-card-item {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .mold-card-item:hover {
+      border-color: rgba(47, 121, 252, 0.4);
+      transform: translateY(-1px);
+    }
+    .mold-card-item.selected {
+      border-color: #2f79fc !important;
+      background: rgba(47, 121, 252, 0.12) !important;
+      box-shadow: 0 0 0 2px rgba(47, 121, 252, 0.25);
+    }
+
+    /* ─── 1. MOLD: DARK LUXURY ───────────────────────────────────── */
+    .mold-dark-luxury {
+      background: radial-gradient(circle at 50% 15%, rgba(212, 175, 55, 0.2), transparent 75%), #0c0d12;
+      border: 1px solid rgba(212, 175, 55, 0.38);
+      border-radius: 14px;
+      color: #f5f5f5;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), inset 0 0 15px rgba(212, 175, 55, 0.06);
+      font-family: 'Playfair Display', Georgia, serif;
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .mold-dark-luxury:hover, .mold-dark-luxury.selected {
+      border-color: #d4af37;
+      box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+      transform: translateY(-2px);
+    }
+    .mold-dark-luxury.selected {
+      outline: 2px solid #d4af37;
+      outline-offset: 2px;
+    }
+    .luxury-badge {
+      font-family: 'Inter', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      color: #d4af37;
+      text-transform: uppercase;
+      display: inline-block;
+      padding: 3px 10px;
+      border: 1px solid rgba(212, 175, 55, 0.5);
+      border-radius: 999px;
+      background: rgba(212, 175, 55, 0.12);
+    }
+    .luxury-brand {
+      font-size: 10px;
+      letter-spacing: 0.25em;
+      color: #c5a059;
+      text-transform: uppercase;
+      margin-top: 8px;
+    }
+    .luxury-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.02em;
+      margin-top: 3px;
+      line-height: 1.25;
+    }
+    .luxury-divider {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 8px 0;
+      color: #d4af37;
+      font-size: 9px;
+    }
+    .luxury-divider::before, .luxury-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.4), transparent);
+    }
+    .luxury-price-tag {
+      display: flex;
+      align-items: baseline;
+      gap: 3px;
+      background: linear-gradient(135deg, #d4af37 0%, #fcf6ba 50%, #aa771c 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-weight: 800;
+    }
+    .luxury-currency {
+      font-size: 15px;
+    }
+    .luxury-amount {
+      font-size: 24px;
+      letter-spacing: -0.02em;
+    }
+    .luxury-footer {
+      font-family: 'Inter', sans-serif;
+      font-size: 8.5px;
+      color: #a3906f;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      margin-top: 8px;
+    }
+
+    /* ─── 2. MOLD: GLASSMORPHISM ─────────────────────────────────── */
+    .mold-glassmorphism {
+      position: relative;
+      background: linear-gradient(135deg, #1e1b4b 0%, #3b0764 50%, #0369a1 100%);
+      border-radius: 14px;
+      overflow: hidden;
+      padding: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+      font-family: 'Outfit', 'Inter', sans-serif;
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .mold-glassmorphism:hover, .mold-glassmorphism.selected {
+      border-color: rgba(255, 255, 255, 0.5);
+      box-shadow: 0 12px 32px rgba(6, 182, 212, 0.3);
+      transform: translateY(-2px);
+    }
+    .mold-glassmorphism.selected {
+      outline: 2px solid #06b6d4;
+      outline-offset: 2px;
+    }
+    .glass-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(24px);
+      pointer-events: none;
+    }
+    .glass-orb-1 {
+      width: 90px;
+      height: 90px;
+      background: #ec4899;
+      top: -15px;
+      left: -15px;
+      opacity: 0.65;
+    }
+    .glass-orb-2 {
+      width: 100px;
+      height: 100px;
+      background: #06b6d4;
+      bottom: -20px;
+      right: -15px;
+      opacity: 0.65;
+    }
+    .glass-sheet {
+      position: relative;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.25);
+    }
+    .glass-pill-badge {
+      font-size: 8.5px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.22);
+      padding: 2px 7px;
+      border-radius: 999px;
+      display: inline-block;
+      margin-bottom: 6px;
+    }
+    .glass-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #ffffff;
+      line-height: 1.2;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.35);
+    }
+    .glass-subtitle {
+      font-size: 10.5px;
+      color: rgba(255, 255, 255, 0.85);
+      margin-top: 2px;
+    }
+    .glass-price-box {
+      margin-top: 8px;
+      padding-top: 6px;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+    }
+    .glass-label {
+      font-size: 8.5px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.75);
+    }
+    .glass-price {
+      font-size: 21px;
+      font-weight: 900;
+      color: #ffffff;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.4);
+    }
+    .glass-action {
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #67e8f9;
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    /* ─── 3. MOLD: EDITORIAL MINIMALISTA ─────────────────────────── */
+    .mold-editorial-minimal {
+      background: #fafaf9;
+      border: 1px solid #e7e5e4;
+      border-radius: 14px;
+      color: #1c1917;
+      padding: 15px;
+      font-family: 'Inter', sans-serif;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+      cursor: pointer;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .mold-editorial-minimal:hover, .mold-editorial-minimal.selected {
+      border-color: #09090b;
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.28);
+      transform: translateY(-2px);
+    }
+    .mold-editorial-minimal.selected {
+      outline: 2px solid #18181b;
+      outline-offset: 2px;
+    }
+    .editorial-paper {
+      position: relative;
+    }
+    .editorial-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 8.5px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: #78716c;
+      text-transform: uppercase;
+    }
+    .editorial-rule {
+      height: 1px;
+      background: #1c1917;
+      margin: 6px 0 8px 0;
+    }
+    .editorial-title {
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      color: #1c1917;
+      text-transform: uppercase;
+      line-height: 1.15;
+    }
+    .editorial-meta {
+      font-size: 10.5px;
+      color: #57534e;
+      margin-top: 3px;
+      font-style: italic;
+    }
+    .editorial-price-row {
+      margin-top: 10px;
+      padding-top: 6px;
+      border-top: 1px dashed #d6d3d1;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .editorial-price-label {
+      font-size: 8.5px;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      color: #a8a29e;
+    }
+    .editorial-price-val {
+      font-size: 22px;
+      font-weight: 900;
+      color: #09090b;
+      letter-spacing: -0.03em;
+    }
+    .editorial-bottom {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: #78716c;
+      margin-top: 6px;
+      text-transform: uppercase;
+    }
+
     /* Mobile Tabs Navigation */
     @media (max-width: 1023px) {
       body[data-mobile-tab="editor"] #editorPanel { display: block !important; }
@@ -443,13 +797,116 @@
           </select>
         </div>
 
+        <!-- MOLD CATEGORY TABS -->
         <div>
-          <label class="text-xs text-surface-400 mb-1 block">Molde Visual Retail</label>
-          <select id="moldSelect" class="input-field w-full rounded-xl px-4 py-2.5 text-sm appearance-none cursor-pointer bg-slate-900 text-white [&>option]:bg-slate-800 [&>option]:text-white [&>option]:py-2">
-            <option value="mold1">1. Oferta de Supermercado (Retail Clásico)</option>
-            <option value="mold2">2. Modern Card / Catálogo Digital</option>
-            <option value="mold3">3. Promo Explosiva / Flash Sale</option>
-          </select>
+          <label class="text-xs text-surface-400 mb-2 block">Categoría de Molde</label>
+          <div class="mold-tabs-nav" role="tablist">
+            <button type="button" class="mold-tab-btn active" data-tab="tab-super" role="tab" aria-selected="true">
+              <i data-lucide="shopping-basket" class="w-3.5 h-3.5"></i>
+              <span>Súper / Kiosco</span>
+            </button>
+            <button type="button" class="mold-tab-btn" data-tab="tab-indumentaria" role="tab" aria-selected="false">
+              <i data-lucide="shirt" class="w-3.5 h-3.5"></i>
+              <span>Indumentaria</span>
+            </button>
+            <button type="button" class="mold-tab-btn" data-tab="tab-premium" role="tab" aria-selected="false">
+              <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+              <span>Otros (Premium)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- MOLD TABS CONTENT -->
+        <div class="mold-tabs-content">
+          <!-- 1. PESTAÑA SÚPER / KIOSCO (Moldes originales intactos) -->
+          <div id="tab-super" class="mold-tab-panel active" role="tabpanel">
+            <label class="text-xs text-surface-400 mb-1 block">Molde Visual Retail</label>
+            <select id="moldSelect" class="input-field w-full rounded-xl px-4 py-2.5 text-sm appearance-none cursor-pointer bg-slate-900 text-white [&>option]:bg-slate-800 [&>option]:text-white [&>option]:py-2">
+              <option value="mold1">1. Oferta de Supermercado (Retail Clásico)</option>
+              <option value="mold2">2. Modern Card / Catálogo Digital</option>
+              <option value="mold3">3. Promo Explosiva / Flash Sale</option>
+            </select>
+            <p class="text-[11px] text-surface-500 mt-2 flex items-center gap-1.5"><i data-lucide="check-circle" class="w-3 h-3 text-brand-400"></i> Diseños retail de alto impacto listos para impresión y redes.</p>
+          </div>
+
+          <!-- 2. PESTAÑA INDUMENTARIA -->
+          <div id="tab-indumentaria" class="mold-tab-panel space-y-2.5" role="tabpanel">
+            <label class="text-xs text-surface-400 mb-1 block">Estilos para Moda & Tiendas</label>
+            
+            <div class="mold-card-item p-3 rounded-xl border border-white/10 bg-white/[0.02] flex items-center justify-between" data-mold-val="mold-lookbook">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-300 flex items-center justify-center font-bold text-xs">01</div>
+                <div>
+                  <p class="text-xs font-semibold text-white">Lookbook & Catálogo</p>
+                  <p class="text-[10px] text-surface-400">Enfoque limpio para prendas y calzado</p>
+                </div>
+              </div>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300">Moda</span>
+            </div>
+
+            <div class="mold-card-item p-3 rounded-xl border border-white/10 bg-white/[0.02] flex items-center justify-between" data-mold-val="mold-streetwear">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-pink-500/20 text-pink-300 flex items-center justify-center font-bold text-xs">02</div>
+                <div>
+                  <p class="text-xs font-semibold text-white">Streetwear / Drop</p>
+                  <p class="text-[10px] text-surface-400">Tipografía bold y estética urbana</p>
+                </div>
+              </div>
+              <span class="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-300">Urbano</span>
+            </div>
+          </div>
+
+          <!-- 3. PESTAÑA OTROS (PREMIUM) - 3 NUEVOS MOLDES DE ALTA GAMA -->
+          <div id="tab-premium" class="mold-tab-panel space-y-3" role="tabpanel">
+            <label class="text-xs text-surface-400 mb-1 block">Moldes Exclusivos de Alta Gama</label>
+            
+            <!-- Molde A: Dark Luxury -->
+            <div class="premium-mold-card mold-dark-luxury" data-mold-val="dark-luxury" title="Clic para seleccionar Dark Luxury">
+              <span class="luxury-badge">EXCLUSIF • HAUTE GAMME</span>
+              <div class="luxury-brand">LA MAISON PRIVÉE</div>
+              <h3 class="luxury-title">Édition Noire</h3>
+              <div class="luxury-divider"><span>✦</span></div>
+              <div class="luxury-price-tag">
+                <span class="luxury-currency">$</span>
+                <span class="luxury-amount">18.500</span>
+              </div>
+              <div class="luxury-footer">RESERVA PRIVADA &bull; ENVÍO DEDICADO</div>
+            </div>
+
+            <!-- Molde B: Glassmorphism -->
+            <div class="premium-mold-card mold-glassmorphism" data-mold-val="glassmorphism" title="Clic para seleccionar Glassmorphism">
+              <div class="glass-orb glass-orb-1"></div>
+              <div class="glass-orb glass-orb-2"></div>
+              <div class="glass-sheet">
+                <span class="glass-pill-badge">✨ NEW AESTHETIC</span>
+                <h3 class="glass-title">AURA TRANSLUCENT</h3>
+                <p class="glass-subtitle">Next-gen sensory experience</p>
+                <div class="glass-price-box">
+                  <span class="glass-label">SPECIAL EDITION</span>
+                  <span class="glass-price">$12.490</span>
+                </div>
+                <div class="glass-action">TAP TO DISCOVER &rarr;</div>
+              </div>
+            </div>
+
+            <!-- Molde C: Editorial Minimalista -->
+            <div class="premium-mold-card mold-editorial-minimal" data-mold-val="editorial-minimal" title="Clic para seleccionar Editorial Minimalista">
+              <div class="editorial-paper">
+                <div class="editorial-header">
+                  <span>VOL. 24 / N° 08</span>
+                  <span>STUDIO ARCHIVE</span>
+                </div>
+                <div class="editorial-rule"></div>
+                <h3 class="editorial-title">ESSENTIAL FORM</h3>
+                <p class="editorial-meta">Handcrafted Monochrome Object — Series 01</p>
+                <div class="editorial-price-row">
+                  <span class="editorial-price-label">PRICE</span>
+                  <span class="editorial-price-val">$9.800</span>
+                </div>
+                <div class="editorial-bottom">AVAILABLE IN SELECTED BOUTIQUES WORLDWIDE</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
       
@@ -625,6 +1082,12 @@
           <label class="text-xs text-surface-400 mb-1 block font-semibold flex items-center gap-2"><i data-lucide="webhook" class="w-3 h-3"></i> Webhook URL (Make.com / n8n)</label>
           <input id="webhookUrl" type="url" class="input-field w-full rounded-xl px-4 py-2.5 text-sm" placeholder="https://hook.us1.make.com/..." />
         </div>
+
+        <div class="pt-2 border-t border-white/5">
+          <label class="text-xs text-surface-400 mb-1 block font-semibold flex items-center gap-2"><i data-lucide="cloud" class="w-3 h-3 text-cyan-400"></i> API Key de ImgBB (Hosting)</label>
+          <input id="imgbbApiKey" type="password" class="input-field w-full rounded-xl px-4 py-2.5 text-sm" placeholder="Ingresá tu API Key de api.imgbb.com" />
+          <p class="text-[10px] text-surface-500 mt-1">Obtené tu clave gratuita en <a href="https://api.imgbb.com/" target="_blank" class="text-brand-400 underline">api.imgbb.com</a> para generar <code>image_url</code>.</p>
+        </div>
         
         <div class="pt-2 border-t border-white/5">
           <label class="text-xs text-surface-400 mb-1 block font-semibold flex items-center gap-2"><i data-lucide="key" class="w-3 h-3"></i> API Key de Remove.bg (Opcional)</label>
@@ -691,9 +1154,13 @@
     const settingsModal = document.getElementById('settingsModal');
     const closeSettings = document.getElementById('closeSettings');
     const webhookUrlInput = document.getElementById('webhookUrl');
+    const imgbbApiKeyInput = document.getElementById('imgbbApiKey');
     const removeBgApiKeyInput = document.getElementById('removeBgApiKey');
     const saveSettingsBtn = document.getElementById('saveSettings');
     const toastEl = document.getElementById('toast');
+
+    // Clave de API de ImgBB predeterminada
+    const DEFAULT_IMGBB_API_KEY = 'TU_API_KEY';
 
     // ── Colors Dictionary (Retail High Impact) ─────────────────────
     const colorsMap = {
@@ -769,11 +1236,13 @@
       channels: ['facebook'], // Canales de destino seleccionados
       
       webhookUrl: localStorage.getItem('autoflyer_webhook_url') || '',
-      removeBgKey: localStorage.getItem('autoflyer_removebg_key') || ''
+      removeBgKey: localStorage.getItem('autoflyer_removebg_key') || '',
+      imgbbKey: localStorage.getItem('autoflyer_imgbb_key') || DEFAULT_IMGBB_API_KEY
     };
 
     storeNameInput.value = state.storeName;
     webhookUrlInput.value = state.webhookUrl;
+    imgbbApiKeyInput.value = state.imgbbKey === DEFAULT_IMGBB_API_KEY ? '' : state.imgbbKey;
     removeBgApiKeyInput.value = state.removeBgKey;
 
     // ── Toast ──────────────────────────────────────────────────────
@@ -1251,6 +1720,53 @@
     badgeSelect.addEventListener('change', () => { state.badge = badgeSelect.value; renderFlyer(); });
     moldSelect.addEventListener('change', () => { state.mold = moldSelect.value; renderFlyer(); });
 
+    // ── Mold Category Tabs Switching (Vanilla JS) ──────────────────
+    const moldTabButtons = document.querySelectorAll('.mold-tab-btn');
+    const moldTabPanels = document.querySelectorAll('.mold-tab-panel');
+
+    moldTabButtons.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetTabId = btn.getAttribute('data-tab');
+
+        // 1. Quitar .active de todas las pestañas y activarla en el botón pulsado
+        moldTabButtons.forEach(b => {
+          b.classList.remove('active');
+          b.setAttribute('aria-selected', 'false');
+        });
+        btn.classList.add('active');
+        btn.setAttribute('aria-selected', 'true');
+
+        // 2. Alternar visibilidad de los paneles mediante clase .active
+        moldTabPanels.forEach(panel => {
+          if (panel.id === targetTabId) {
+            panel.classList.add('active');
+          } else {
+            panel.classList.remove('active');
+          }
+        });
+
+        // 3. Protección del Canvas: Redibujar y asegurar iconos listos
+        renderFlyer();
+        if (window.lucide) lucide.createIcons();
+      });
+    });
+
+    // ── Selección Interactiva de Moldes (Indumentaria & Premium) ──
+    const selectableMolds = document.querySelectorAll('.mold-card-item, .premium-mold-card');
+    selectableMolds.forEach(card => {
+      card.addEventListener('click', () => {
+        selectableMolds.forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        const selectedMold = card.getAttribute('data-mold-val');
+        if (selectedMold) {
+          state.mold = selectedMold;
+          renderFlyer();
+          showToast(`Molde activo: ${selectedMold.replace('mold-', '').replace('-', ' ').toUpperCase()} ✨`, 'info');
+        }
+      });
+    });
+
     // ── Format Selector ────────────────────────────────────────────
     formatContainer.addEventListener('click', e => {
       const btn = e.target.closest('[data-format]');
@@ -1325,8 +1841,10 @@
     saveSettingsBtn.addEventListener('click', () => {
       state.webhookUrl = webhookUrlInput.value.trim();
       state.removeBgKey = removeBgApiKeyInput.value.trim();
+      state.imgbbKey = imgbbApiKeyInput.value.trim() || DEFAULT_IMGBB_API_KEY;
       localStorage.setItem('autoflyer_webhook_url', state.webhookUrl);
       localStorage.setItem('autoflyer_removebg_key', state.removeBgKey);
+      localStorage.setItem('autoflyer_imgbb_key', state.imgbbKey);
       settingsModal.classList.remove('open');
       showToast('Configuraciones guardadas', 'success');
       
@@ -1389,7 +1907,14 @@
         return;
       }
 
-      // Obtener o generar caption profesional
+      const imgbbKey = state.imgbbKey && state.imgbbKey !== DEFAULT_IMGBB_API_KEY ? state.imgbbKey : DEFAULT_IMGBB_API_KEY;
+      if (!imgbbKey || imgbbKey === 'TU_API_KEY') {
+        showToast('⚠️ Configurá tu API Key de ImgBB en Ajustes ⚙️ para alojar la imagen', 'error');
+        settingsModal.classList.add('open');
+        return;
+      }
+
+      // Obtener o generar caption publicitario
       let finalCaption = captionText.value.trim();
       if (!finalCaption) {
         finalCaption = generateProductCaption({
@@ -1401,21 +1926,46 @@
         });
       }
 
-      // 4. Comportamiento para WhatsApp: Si está marcado, abrir pestaña con la API de WhatsApp
+      // Si WhatsApp está seleccionado, abrir la API de WhatsApp
       if (channels.includes('whatsapp')) {
         openWhatsAppUrl(finalCaption);
       }
 
-      showToast('Enviando flyer al webhook...', 'info');
       try {
-        // Compresión JPEG 0.85 y Base64 limpio
-        const dataURL = canvas.toDataURL('image/jpeg', 0.85);
-        const cleanBase64 = dataURL.split(',')[1];
+        // 1. Limpieza del Base64: Obtener imagen del Canvas y eliminar prefijo data:image/...;base64,
+        showToast('Procesando imagen del flyer...', 'info');
+        const rawDataUrl = canvas.toDataURL('image/png');
+        const cleanBase64 = rawDataUrl.replace(/^data:image\/\w+;base64,/, '');
 
-        // 3. Payload hacia Make con la clave channels: channels
+        // 2. Subida a ImgBB mediante fetch y FormData
+        showToast('Alojando imagen en ImgBB...', 'info');
+        const formData = new FormData();
+        formData.append('image', cleanBase64);
+
+        const imgbbResponse = await fetch(`https://api.imgbb.com/1/upload?key=${encodeURIComponent(imgbbKey)}`, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!imgbbResponse.ok) {
+          const errDetail = await imgbbResponse.text();
+          throw new Error(`Error en ImgBB (${imgbbResponse.status}): ${errDetail}`);
+        }
+
+        const imgbbResult = await imgbbResponse.json();
+
+        // 3. Captura de la URL pública directa (url o display_url)
+        const imageUrl = imgbbResult.data?.url || imgbbResult.data?.display_url;
+        if (!imageUrl) {
+          throw new Error('ImgBB no devolvió una URL pública válida');
+        }
+
+        // 4. Actualización del Payload hacia Make: incluye image_base64 e image_url
+        showToast('Enviando payload al Webhook de Make...', 'info');
         const payload = {
           channels: channels,
           image_base64: cleanBase64,
+          image_url: imageUrl,
           caption: finalCaption,
           product_name: state.name || '',
           price: state.price || '',
@@ -1425,20 +1975,21 @@
           format: state.format,
           mold: state.mold
         };
-        
+
+        // 5. Envío final a Make mediante fetch POST
         const res = await fetch(state.webhookUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        
+
         if (res.ok) {
           showToast('¡Flyer publicado exitosamente! 🎉', 'success');
         } else {
           showToast(`Error del servidor Make: ${res.status}`, 'error');
         }
       } catch (err) {
-        showToast('Error de conexión: ' + err.message, 'error');
+        showToast('Error al publicar: ' + err.message, 'error');
       }
     });
 
