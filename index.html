@@ -1760,8 +1760,7 @@
         card.classList.add('selected');
         const selectedMold = card.getAttribute('data-mold-val');
         if (selectedMold) {
-          state.mold = selectedMold;
-          renderFlyer();
+          cambiarMolde(selectedMold);
           showToast(`Molde activo: ${selectedMold.replace('mold-', '').replace('-', ' ').toUpperCase()} ✨`, 'info');
         }
       });
@@ -2990,9 +2989,351 @@
     }
 
     // ══════════════════════════════════════════════════════════════
-    // ██  MAIN RENDER
+    // ██  NUEVOS MOLDES DE ALTA GAMA (INDUMENTARIA & PREMIUM)
     // ══════════════════════════════════════════════════════════════
-    function renderFlyer() {
+
+    // Helper: Dibujar imagen centrada con aspect ratio contain/cover
+    function drawProductImageFit(img, targetX, targetY, targetW, targetH, isContain = true) {
+      if (!img) return;
+      const nw = img.naturalWidth || img.width;
+      const nh = img.naturalHeight || img.height;
+      if (!nw || !nh) return;
+      const ratio = nw / nh;
+      let dw, dh;
+      if (isContain) {
+        if (targetW / targetH > ratio) {
+          dh = targetH;
+          dw = targetH * ratio;
+        } else {
+          dw = targetW;
+          dh = targetW / ratio;
+        }
+      } else {
+        if (targetW / targetH > ratio) {
+          dw = targetW;
+          dh = targetW / ratio;
+        } else {
+          dh = targetH;
+          dw = targetH * ratio;
+        }
+      }
+      const dx = targetX + (targetW - dw) / 2;
+      const dy = targetY + (targetH - dh) / 2;
+      ctx.drawImage(img, dx, dy, dw, dh);
+    }
+
+    // ── 1. MOLDE: DARK LUXURY ──────────────────────────────────────
+    function renderMoldeDarkLuxury(W, H, c) {
+      const isSquare = state.format === 'square';
+      const m = isSquare ? 40 : 50;
+
+      // 1. Fondo Oscuro Obsidian con Halo Dorado
+      const bgGrad = ctx.createRadialGradient(W / 2, H * 0.35, 50, W / 2, H / 2, Math.max(W, H) * 0.75);
+      bgGrad.addColorStop(0, '#1c1913');
+      bgGrad.addColorStop(0.4, '#0c0d10');
+      bgGrad.addColorStop(1, '#050608');
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Marco dorado doble con ornatos
+      ctx.strokeStyle = 'rgba(212, 175, 55, 0.45)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(m, m, W - m * 2, H - m * 2);
+
+      ctx.strokeStyle = 'rgba(212, 175, 55, 0.2)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(m + 8, m + 8, W - m * 2 - 16, H - m * 2 - 16);
+
+      // 2. Encabezado de Marca
+      const topY = m + 35;
+      setFont(isSquare ? 20 : 24, '600 italic', '"Playfair Display", Georgia, serif');
+      ctx.fillStyle = '#D4AF37';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillText((state.storeName || 'MAISON DE LUXE').toUpperCase(), W / 2, topY);
+
+      // Badge de Lujo
+      setFont(12, '700', '"Inter", sans-serif');
+      const badgeTxt = `✦ ${(state.badge || 'ÉDITION LIMITÉE').toUpperCase()} ✦`;
+      ctx.fillStyle = '#E6CA65';
+      ctx.fillText(badgeTxt, W / 2, topY + (isSquare ? 32 : 38));
+
+      // 3. Área de Producto / Fotografía
+      const imgSize = isSquare ? W * 0.48 : W * 0.54;
+      const imgY = isSquare ? H * 0.22 : H * 0.24;
+      const imgX = (W - imgSize) / 2;
+
+      // Halo dorado detrás del producto
+      const halo = ctx.createRadialGradient(W / 2, imgY + imgSize / 2, 10, W / 2, imgY + imgSize / 2, imgSize * 0.65);
+      halo.addColorStop(0, 'rgba(212, 175, 55, 0.22)');
+      halo.addColorStop(1, 'transparent');
+      ctx.fillStyle = halo;
+      ctx.beginPath();
+      ctx.arc(W / 2, imgY + imgSize / 2, imgSize * 0.65, 0, Math.PI * 2);
+      ctx.fill();
+
+      const imgToDraw = state.processedImage || state.image;
+      if (imgToDraw) {
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+        ctx.shadowBlur = 30;
+        ctx.shadowOffsetY = 15;
+        drawProductImageFit(imgToDraw, imgX, imgY, imgSize, imgSize, true);
+        ctx.restore();
+      } else {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.3)';
+        ctx.setLineDash([6, 6]);
+        ctx.strokeRect(imgX, imgY, imgSize, imgSize);
+        setFont(16, '400 italic', '"Playfair Display", serif');
+        ctx.fillStyle = '#A3906F';
+        ctx.textAlign = 'center';
+        ctx.fillText('Fotografía Exclusiva', W / 2, imgY + imgSize / 2);
+        ctx.restore();
+      }
+
+      // 4. Nombre del Producto en Serif Elegante
+      const titleY = imgY + imgSize + (isSquare ? 20 : 35);
+      setFont(isSquare ? 36 : 46, '700', '"Playfair Display", Georgia, serif');
+      ctx.fillStyle = '#FFFFFF';
+      ctx.textAlign = 'center';
+      wrapTextStrict((state.name || 'PIEZA EXCLUSIVA').toUpperCase(), W / 2, titleY, W - m * 2 - 40, isSquare ? 42 : 52, 2, 'center');
+
+      // 5. Bloque de Precio Dorado
+      const priceY = isSquare ? H - m - 90 : H - m - 140;
+      ctx.strokeStyle = 'rgba(212, 175, 55, 0.35)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(W / 2 - 120, priceY - 15);
+      ctx.lineTo(W / 2 + 120, priceY - 15);
+      ctx.stroke();
+
+      setFont(isSquare ? 48 : 58, '800', '"Playfair Display", Georgia, serif');
+      ctx.fillStyle = '#D4AF37';
+      const pText = state.price ? (String(state.price).includes('$') ? state.price : `$${state.price}`) : '$0.00';
+      ctx.fillText(pText, W / 2, priceY);
+
+      if (state.presentation) {
+        setFont(14, '500', '"Inter", sans-serif');
+        ctx.fillStyle = '#A3906F';
+        ctx.fillText(state.presentation.toUpperCase(), W / 2, priceY + (isSquare ? 46 : 56));
+      }
+    }
+
+    // ── 2. MOLDE: GLASSMORPHISM ────────────────────────────────────
+    function renderMoldeGlassmorphism(W, H, c) {
+      const isSquare = state.format === 'square';
+      const pad = isSquare ? 40 : 50;
+
+      // 1. Fondo Mesh Futurista (Gradiente multicolor)
+      const grad = ctx.createLinearGradient(0, 0, W, H);
+      grad.addColorStop(0, '#111827');
+      grad.addColorStop(0.35, '#311042');
+      grad.addColorStop(0.7, '#0f3a61');
+      grad.addColorStop(1, '#0c192e');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Orbes brillantes difuminados
+      function drawOrb(ox, oy, orad, color) {
+        const og = ctx.createRadialGradient(ox, oy, 10, ox, oy, orad);
+        og.addColorStop(0, color);
+        og.addColorStop(1, 'transparent');
+        ctx.fillStyle = og;
+        ctx.beginPath();
+        ctx.arc(ox, oy, orad, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      drawOrb(W * 0.2, H * 0.25, W * 0.4, 'rgba(236, 72, 153, 0.35)');
+      drawOrb(W * 0.8, H * 0.65, W * 0.45, 'rgba(6, 182, 212, 0.32)');
+
+      // 2. Tarjeta Translúcida Central (Efecto Vidrio Esmerilado)
+      const cardW = W - pad * 2;
+      const cardH = H - pad * 2;
+      roundRect(pad, pad, cardW, cardH, 30);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Reflejo superior de vidrio
+      roundRect(pad + 1, pad + 1, cardW - 2, (cardH - 2) * 0.35, 28);
+      const glassGrad = ctx.createLinearGradient(0, pad, 0, pad + cardH * 0.35);
+      glassGrad.addColorStop(0, 'rgba(255, 255, 255, 0.15)');
+      glassGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+      ctx.fillStyle = glassGrad;
+      ctx.fill();
+
+      // 3. Encabezado translúcido
+      const topY = pad + 30;
+      setFont(isSquare ? 20 : 24, '800', '"Outfit", sans-serif');
+      ctx.fillStyle = '#FFFFFF';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText((state.storeName || 'AURA COLLECTION').toUpperCase(), pad + 30, topY);
+
+      // Pill badge de cristal
+      setFont(12, '700', '"Inter", sans-serif');
+      const bText = (state.badge || 'LIMITED').toUpperCase();
+      const bW = ctx.measureText(bText).width + 24;
+      roundRect(W - pad - 30 - bW, topY - 4, bW, 28, 999);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.18)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.fillStyle = '#FFFFFF';
+      ctx.textAlign = 'center';
+      ctx.fillText(bText, W - pad - 30 - bW / 2, topY + 4);
+
+      // 4. Imagen de Producto
+      const imgSize = isSquare ? cardW * 0.52 : cardW * 0.58;
+      const imgY = isSquare ? H * 0.22 : H * 0.25;
+      const imgX = (W - imgSize) / 2;
+      const imgToDraw = state.processedImage || state.image;
+      if (imgToDraw) {
+        ctx.save();
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.45)';
+        ctx.shadowBlur = 25;
+        ctx.shadowOffsetY = 12;
+        drawProductImageFit(imgToDraw, imgX, imgY, imgSize, imgSize, true);
+        ctx.restore();
+      }
+
+      // 5. Título y Precio
+      const textY = imgY + imgSize + (isSquare ? 15 : 25);
+      setFont(isSquare ? 34 : 42, '800', '"Outfit", sans-serif');
+      ctx.fillStyle = '#FFFFFF';
+      ctx.textAlign = 'center';
+      wrapTextStrict((state.name || 'PRODUCTO GLASS').toUpperCase(), W / 2, textY, cardW - 60, isSquare ? 40 : 48, 2, 'center');
+
+      // Tarjeta de Precio inferior de cristal
+      const pBoxW = cardW - 60;
+      const pBoxH = isSquare ? 80 : 96;
+      const pBoxY = H - pad - pBoxH - 24;
+      roundRect(pad + 30, pBoxY, pBoxW, pBoxH, 20);
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.12)';
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      setFont(isSquare ? 40 : 48, '900', '"Outfit", sans-serif');
+      ctx.fillStyle = '#38BDF8';
+      ctx.textAlign = 'left';
+      const prTxt = state.price ? (String(state.price).includes('$') ? state.price : `$${state.price}`) : '$0.00';
+      ctx.fillText(prTxt, pad + 50, pBoxY + (isSquare ? 18 : 24));
+
+      if (state.presentation) {
+        setFont(14, '600', '"Inter", sans-serif');
+        ctx.fillStyle = '#E2E8F0';
+        ctx.textAlign = 'right';
+        ctx.fillText(state.presentation.toUpperCase(), W - pad - 50, pBoxY + (isSquare ? 30 : 38));
+      }
+    }
+
+    // ── 3. MOLDE: EDITORIAL MINIMALISTA ────────────────────────────
+    function renderMoldeEditorial(W, H, c) {
+      const isSquare = state.format === 'square';
+      const m = isSquare ? 40 : 54;
+
+      // 1. Fondo Blanco Cálido Editorial
+      ctx.fillStyle = '#FAF8F5';
+      ctx.fillRect(0, 0, W, H);
+
+      // Marco fino negro
+      ctx.strokeStyle = '#18181B';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(m, m, W - m * 2, H - m * 2);
+
+      // 2. Encabezado de Revista
+      const topY = m + 24;
+      setFont(12, '800', '"Inter", sans-serif');
+      ctx.fillStyle = '#71717A';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText('VOL. 26 // ISSUE 01', m + 24, topY);
+
+      ctx.textAlign = 'right';
+      ctx.fillText((state.badge || 'SELECTED COLLECTION').toUpperCase(), W - m - 24, topY);
+
+      // Línea divisora negra
+      ctx.strokeStyle = '#18181B';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(m + 24, topY + 22);
+      ctx.lineTo(W - m - 24, topY + 22);
+      ctx.stroke();
+
+      // 3. Título Editorial
+      const titleY = topY + 36;
+      setFont(isSquare ? 32 : 40, '900', '"Outfit", "Inter", sans-serif');
+      ctx.fillStyle = '#18181B';
+      ctx.textAlign = 'left';
+      wrapTextStrict((state.name || 'MINIMAL OBJECT').toUpperCase(), m + 24, titleY, W - m * 2 - 48, isSquare ? 38 : 46, 2, 'left');
+
+      // 4. Fotografía con paspartú
+      const imgW = W - m * 2 - 48;
+      const imgH = isSquare ? H * 0.42 : H * 0.48;
+      const imgX = m + 24;
+      const imgY = titleY + (isSquare ? 80 : 100);
+
+      ctx.fillStyle = '#F4F1EC';
+      ctx.fillRect(imgX, imgY, imgW, imgH);
+      ctx.strokeStyle = '#E4E4E7';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(imgX, imgY, imgW, imgH);
+
+      const imgToDraw = state.processedImage || state.image;
+      if (imgToDraw) {
+        drawProductImageFit(imgToDraw, imgX + 15, imgY + 15, imgW - 30, imgH - 30, true);
+      }
+
+      // 5. Pie de página editorial con precio limpio
+      const botY = H - m - (isSquare ? 65 : 85);
+      ctx.strokeStyle = '#18181B';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(m + 24, botY - 14);
+      ctx.lineTo(W - m - 24, botY - 14);
+      ctx.stroke();
+
+      setFont(11, '700', '"Inter", sans-serif');
+      ctx.fillStyle = '#71717A';
+      ctx.textAlign = 'left';
+      ctx.fillText((state.storeName || 'DESIGN STUDIO').toUpperCase(), m + 24, botY);
+      if (state.presentation) {
+        setFont(11, '500', '"Inter", sans-serif');
+        ctx.fillText(`ESPECIFICACIÓN: ${state.presentation.toUpperCase()}`, m + 24, botY + 18);
+      }
+
+      setFont(isSquare ? 36 : 44, '900', '"Outfit", sans-serif');
+      ctx.fillStyle = '#18181B';
+      ctx.textAlign = 'right';
+      const prTxt = state.price ? (String(state.price).includes('$') ? state.price : `$${state.price}`) : '$0.00';
+      ctx.fillText(prTxt, W - m - 24, botY);
+    }
+
+    // ── 4. MOLDE: LOOKBOOK INDUMENTARIA ────────────────────────────
+    function renderMoldeLookbook(W, H, c) {
+      renderMoldeEditorial(W, H, c);
+    }
+
+    // ── 5. MOLDE: STREETWEAR INDUMENTARIA ──────────────────────────
+    function renderMoldeStreetwear(W, H, c) {
+      renderMolde2(W, H, c);
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    // ██  GESTOR DINÁMICO DE MOLDES Y VARIABLES (AutoFlyer Pro)
+    // ══════════════════════════════════════════════════════════════
+    function cambiarMolde(nuevoMoldeId) {
+      if (nuevoMoldeId) {
+        state.mold = nuevoMoldeId;
+      }
+      const currentMold = state.mold || 'mold1';
+
       const { w, h } = getDims();
       canvas.width = w;
       canvas.height = h;
@@ -3000,12 +3341,42 @@
 
       const colors = colorsMap[state.badge] || colorsMap['OFERTA'];
 
-      switch (state.mold) {
-        case 'mold1': renderMolde1(w, h, colors); break;
-        case 'mold2': renderMolde2(w, h, colors); break;
-        case 'mold3': renderMolde3(w, h, colors); break;
-        default: renderMolde1(w, h, colors); break;
+      // Mapeo exhaustivo y escalable de todos los moldes
+      const MOLD_DISPATCHER = {
+        // Súper / Kiosco
+        'mold1': () => renderMolde1(w, h, colors),
+        'mold2': () => renderMolde2(w, h, colors),
+        'mold3': () => renderMolde3(w, h, colors),
+
+        // Indumentaria
+        'mold-lookbook': () => renderMoldeLookbook(w, h, colors),
+        'mold-streetwear': () => renderMoldeStreetwear(w, h, colors),
+
+        // Otros (Premium)
+        'dark-luxury': () => renderMoldeDarkLuxury(w, h, colors),
+        'glassmorphism': () => renderMoldeGlassmorphism(w, h, colors),
+        'editorial-minimal': () => renderMoldeEditorial(w, h, colors)
+      };
+
+      const renderFn = MOLD_DISPATCHER[currentMold] || MOLD_DISPATCHER['mold1'];
+      renderFn();
+
+      // Sincronización visual de estado seleccionado en la UI
+      document.querySelectorAll('.mold-card-item, .premium-mold-card').forEach(card => {
+        if (card.getAttribute('data-mold-val') === currentMold) {
+          card.classList.add('selected');
+        } else {
+          card.classList.remove('selected');
+        }
+      });
+
+      if (moldSelect && ['mold1', 'mold2', 'mold3'].includes(currentMold)) {
+        moldSelect.value = currentMold;
       }
+    }
+
+    function renderFlyer() {
+      cambiarMolde();
     }
 
     // ── Init ──────────────────────────────────────────────────────
