@@ -786,34 +786,113 @@
       toastTimer = setTimeout(() => toastEl.classList.remove('show'), 3500);
     }
 
-    // ── Generate Copy (IA) ─────────────────────────────────────────
-    const copyTemplates = [
-      "🔥 ¡EXCLUSIVO EN [Local]! [Badge]: Llevate [Producto] [Presentación] por solo [Precio]. ¡Pedí el tuyo directo por WhatsApp antes que vuele! 📲",
-      "⚡ NO TE LO PIERDAS en [Local]: [Producto] [Presentación] a tan solo [Precio]. Calidad comercial garantizada. Reservá hoy mismo. 📦",
-      "🛒 [Badge] en stock en [Local]: [Producto] al mejor precio: [Precio] [Presentación]. ¡Mandanos un mensaje y coordinamos entrega! 💬",
-      "💎 SÚPER OPORTUNIDAD: [Producto] [Presentación] en [Local]. Lo tenés hoy por [Precio]. [Badge] imperdible. ¡Escribinos! 🚀",
-      "✨ Renovate con este [Badge]: [Producto] a [Precio] en [Local]. [Presentación]. ¡Unidades limitadas, contactanos ya! 📲"
-    ];
+    // ── Generate Commercial Caption / Copy (AutoFlyer Pro) ────────
+    function generateProductCaption(store_name_or_data, product_name, price, presentation, badge) {
+      let data = {};
+      if (typeof store_name_or_data === 'object' && store_name_or_data !== null) {
+        data = store_name_or_data;
+      } else {
+        data = {
+          store_name: store_name_or_data,
+          product_name,
+          price,
+          presentation,
+          badge
+        };
+      }
+
+      const rawStore = (data.store_name || '').trim();
+      const rawProduct = (data.product_name || '').trim();
+      const rawPrice = (data.price !== undefined && data.price !== null) ? String(data.price).trim() : '';
+      const rawPres = (data.presentation || '').trim();
+      const rawBadge = (data.badge || 'OFERTA').trim();
+
+      const store = rawStore || 'NUESTRO COMERCIO';
+      const product = rawProduct || 'Producto Destacado';
+      const badgeText = rawBadge.toUpperCase();
+
+      // Formato moneda inteligente
+      const formatCurrency = (val) => {
+        if (!val) return 'Consultar precio';
+        if (/[$€£¥]/i.test(val)) return val;
+        const cleanNum = val.replace(/[^0-9.,]/g, '').trim();
+        if (!cleanNum) return '$' + val;
+        const num = parseFloat(cleanNum.replace(/\./g, '').replace(',', '.'));
+        if (!isNaN(num)) {
+          return '$' + num.toLocaleString('es-AR', {
+            minimumFractionDigits: num % 1 === 0 ? 0 : 2,
+            maximumFractionDigits: 2
+          });
+        }
+        return '$' + val;
+      };
+
+      const formattedPrice = formatCurrency(rawPrice);
+      const presentationLine = rawPres ? rawPres : 'Unidad disponible';
+
+      // Emojis según insignia
+      const badgeEmojiMap = {
+        'OFERTA': '🔥',
+        'LIQUIDACIÓN': '💥',
+        'LIQUIDACION': '💥',
+        'SÚPER PRECIO': '⚡',
+        'SUPER PRECIO': '⚡',
+        'ARTÍCULO NUEVO': '✨',
+        'NUEVO': '✨',
+        'DESTACADO': '⭐',
+        'DESCUENTO': '🏷️',
+        'PROMO': '🎉'
+      };
+      const icon = badgeEmojiMap[badgeText] || '🔥';
+
+      // 1. Encabezado llamativo con emojis usando el nombre del negocio y la insignia de oferta
+      const header = `${icon} ¡GRAN OPORTUNIDAD EN ${store.toUpperCase()}! ${icon}\n🚨 [${badgeText} IMPERDIBLE] 🚨`;
+
+      // 2. Sección ordenada con viñetas comerciales
+      const details = [
+        `📌 *Producto:* ${product}`,
+        `💰 *Precio especial:* ${formattedPrice}`,
+        `📦 *Presentación / Unidad:* ${presentationLine}`,
+        `⭐ *Garantía:* Calidad y frescura garantizada`
+      ].join('\n');
+
+      // 3. Llamado a la acción claro (entregas locales y WhatsApp / DM)
+      const cta = [
+        `🛵 *Envíos y pedidos:* Coordinamos entregas a domicilio en el día y pedidos locales.`,
+        `📲 *¡No te quedes sin el tuyo!* Escribinos ahora por mensaje privado (DM) o consultanos vía WhatsApp para hacer tu pedido al instante.`
+      ].join('\n');
+
+      // 4. Bloque final de 6 a 8 hashtags comerciales relevantes
+      const cleanStoreTag = rawStore ? '#' + rawStore.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]/g, '') : '';
+      const cleanBadgeTag = '#' + badgeText.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ]/g, '');
+
+      const baseTags = [
+        cleanStoreTag,
+        cleanBadgeTag,
+        '#OfertasImperdibles',
+        '#ComercioLocal',
+        '#PreciosBajos',
+        '#EnviosADomicilio',
+        '#AhorroGarantizado',
+        '#PromoDelDia'
+      ].filter(Boolean);
+
+      const uniqueTags = Array.from(new Set(baseTags)).slice(0, 8);
+      const hashtags = uniqueTags.join(' ');
+
+      return `${header}\n\n${details}\n\n${cta}\n\n${hashtags}`;
+    }
 
     btnGenerateCopy.addEventListener('click', () => {
-      const tpl = copyTemplates[Math.floor(Math.random() * copyTemplates.length)];
-      const localName = state.storeName ? state.storeName.trim() : 'nuestro local';
-      const prodName = state.name ? state.name.trim() : 'nuestro producto estrella';
-      const prodPres = state.presentation ? `(${state.presentation.trim()})` : '';
-      const prodPrice = state.price ? state.price.trim() : 'un precio increíble';
-      
-      let txt = tpl
-        .replace(/\[Local\]/g, localName)
-        .replace(/\[Badge\]/g, state.badge)
-        .replace(/\[Producto\]/g, prodName)
-        .replace(/\[Presentación\]/g, prodPres)
-        .replace(/\[Precio\]/g, prodPrice);
-        
-      // Cleanup double spaces
-      txt = txt.replace(/\s+/g, ' ');
-      
-      captionText.value = txt;
-      showToast('Copy publicitario generado ✨', 'success');
+      const copy = generateProductCaption({
+        store_name: state.storeName,
+        product_name: state.name,
+        price: state.price,
+        presentation: state.presentation,
+        badge: state.badge
+      });
+      captionText.value = copy;
+      showToast('Copy comercial generado ✨', 'success');
     });
 
     // ── Image Upload & Background Processing ───────────────────────
@@ -1194,18 +1273,13 @@
       state.channels = getSelectedChannels();
       if (channelCountBadge) {
         const count = state.channels.length;
-        channelCountBadge.textContent = `${count} ${count === 1 ? 'seleccionado' : 'seleccionados'}`;
-      }
-      const isDisabled = state.channels.length === 0;
-      btnPublish.disabled = isDisabled;
-      if (btnPublishMobile) btnPublishMobile.disabled = isDisabled;
-
-      if (isDisabled) {
-        btnPublish.title = 'Seleccioná al menos un canal para publicar';
-        if (btnPublishMobile) btnPublishMobile.title = 'Seleccioná al menos un canal para publicar';
-      } else {
-        btnPublish.removeAttribute('title');
-        if (btnPublishMobile) btnPublishMobile.removeAttribute('title');
+        if (count === 0) {
+          channelCountBadge.textContent = '0 seleccionados';
+          channelCountBadge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-500/30';
+        } else {
+          channelCountBadge.textContent = `${count} ${count === 1 ? 'seleccionado' : 'seleccionados'}`;
+          channelCountBadge.className = 'text-[10px] font-semibold px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-300 border border-brand-500/30';
+        }
       }
     }
 
@@ -1276,83 +1350,79 @@
       }, 'image/png');
     });
 
-    // ── WhatsApp ───────────────────────────────────────────────────
-    btnWhatsapp.addEventListener('click', async () => {
-      // Use the generated caption if exists, otherwise fallback
-      let text = captionText.value.trim();
-      if (!text) {
-        text = `🔥 *${state.badge}* — ${state.name || 'Producto'}\n📦 ${state.presentation || ''}\n💰 ${state.price || ''}\n\n📲 Consultanos por stock disponible`;
-      }
-      
-      if (navigator.share) {
-        try {
-          const blob = await new Promise(r => canvas.toBlob(r, 'image/png'));
-          const file = new File([blob], 'flyer.png', { type: 'image/png' });
-          await navigator.share({ text, files: [file] });
-          showToast('Compartido exitosamente', 'success');
-        } catch (err) {
-          if (err.name !== 'AbortError') {
-            downloadAndOpenWA(text);
-          }
-        }
-      } else {
-        downloadAndOpenWA(text);
-        showToast('Imagen descargada. Adjuntala al chat.', 'info');
-      }
-    });
-
-    function downloadAndOpenWA(text) {
-      window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank');
-      canvas.toBlob(blob => {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = 'flyer.png'; a.click();
-        URL.revokeObjectURL(url);
-      }, 'image/png');
+    // ── Helper para abrir WhatsApp Web / App en nueva pestaña ───────
+    function openWhatsAppUrl(text) {
+      const waUrl = 'https://wa.me/?text=' + encodeURIComponent(text);
+      window.open(waUrl, '_blank');
     }
 
-    // ── Publish Webhook ────────────────────────────────────────────
+    // ── WhatsApp (Botón Independiente) ─────────────────────────────
+    btnWhatsapp.addEventListener('click', () => {
+      let text = captionText.value.trim();
+      if (!text) {
+        text = generateProductCaption({
+          store_name: state.storeName,
+          product_name: state.name,
+          price: state.price,
+          presentation: state.presentation,
+          badge: state.badge
+        });
+      }
+      openWhatsAppUrl(text);
+      showToast('Abriendo WhatsApp...', 'info');
+    });
+
+    // ── Publish Webhook (Make / Integromat) ────────────────────────
     btnPublish.addEventListener('click', async () => {
-      const selectedChannels = getSelectedChannels();
-      if (selectedChannels.length === 0) {
-        showToast('Seleccioná al menos un canal de destino para publicar', 'error');
+      // 1. Captura de canales marcados en tiempo real
+      const channels = getSelectedChannels();
+
+      // 2. Validación Previa: Alerta impidiendo el envío si no hay canales marcados
+      if (!channels || channels.length === 0) {
+        showToast('⚠️ Debes seleccionar al menos un canal de destino antes de publicar.', 'error');
         return;
       }
 
       if (!state.webhookUrl) {
-        showToast('Configurá primero la URL del Webhook ⚙️', 'error');
+        showToast('Configurá primero la URL del Webhook en Ajustes ⚙️', 'error');
         settingsModal.classList.add('open');
         return;
       }
+
+      // Obtener o generar caption profesional
+      let finalCaption = captionText.value.trim();
+      if (!finalCaption) {
+        finalCaption = generateProductCaption({
+          store_name: state.storeName,
+          product_name: state.name,
+          price: state.price,
+          presentation: state.presentation,
+          badge: state.badge
+        });
+      }
+
+      // 4. Comportamiento para WhatsApp: Si está marcado, abrir pestaña con la API de WhatsApp
+      if (channels.includes('whatsapp')) {
+        openWhatsAppUrl(finalCaption);
+      }
+
       showToast('Enviando flyer al webhook...', 'info');
       try {
-        // JPEG 0.85 compression
+        // Compresión JPEG 0.85 y Base64 limpio
         const dataURL = canvas.toDataURL('image/jpeg', 0.85);
-        // Pure base64
         const cleanBase64 = dataURL.split(',')[1];
 
-        // Custom caption or default
-        let finalCaption = captionText.value.trim();
-        if (!finalCaption) {
-          const storePrefix = state.storeName ? `🏪 ${state.storeName.toUpperCase()}\n` : '';
-          const productName = state.name || 'Producto';
-          const parts = [`${storePrefix}🔥 ${state.badge} — ${productName}`];
-          if (state.presentation) parts.push(`📦 ${state.presentation}`);
-          if (state.price) parts.push(`💰 ${state.price}`);
-          parts.push('📲 Consultanos por stock disponible');
-          finalCaption = parts.join('\n');
-        }
-
+        // 3. Payload hacia Make con la clave channels: channels
         const payload = {
-          channels: selectedChannels,
-          format: state.format,
+          channels: channels,
           image_base64: cleanBase64,
           caption: finalCaption,
-          store_name: state.storeName || '',
           product_name: state.name || '',
-          presentation: state.presentation || '',
           price: state.price || '',
-          badge: state.badge,
+          presentation: state.presentation || '',
+          badge: state.badge || 'OFERTA',
+          store_name: state.storeName || '',
+          format: state.format,
           mold: state.mold
         };
         
@@ -1365,7 +1435,7 @@
         if (res.ok) {
           showToast('¡Flyer publicado exitosamente! 🎉', 'success');
         } else {
-          showToast(`Error del servidor: ${res.status}`, 'error');
+          showToast(`Error del servidor Make: ${res.status}`, 'error');
         }
       } catch (err) {
         showToast('Error de conexión: ' + err.message, 'error');
